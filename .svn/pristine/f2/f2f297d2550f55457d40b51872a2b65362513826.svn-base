@@ -1,0 +1,334 @@
+<template>
+  <div class="wrapper">
+    <div class="title"> 知识付费
+<!--      <span v-if="property.exist">以添加</span>-->
+    </div>
+    <div style="flex: 1;width: 600px;">
+      <el-form ref="form" :model="obj" label-width="80px">
+        <el-form-item label="标题名称">
+          <el-input v-model="obj.detailsName" style="width: 200px;"></el-input>
+        </el-form-item>
+        <el-form-item label="列表样式">
+          <el-select v-model="obj.listStyle" placeholder="样式">
+            <el-option v-for="(item,index) in typeList.listStyleList" :label="item.listStyleName"
+                       :value="item.listStyle" :key="item.listStyle"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="来源">
+          <el-select v-model="obj.sourceType" placeholder="来源">
+            <el-option v-for="(item,index) in typeList.goodsSourceList" :label="item.sourceName"
+                       :value="item.sourceType" :key="item.sourceType"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分组"
+                      v-if="obj.sourceType == 1042102">
+          <el-select v-model="sourceIds" placeholder="分组" @change="onSelectGroup">
+            <el-option v-for="(item,index) in groupingList" :label="item.name"
+                       :value="item.cosGroupId" :key="item.cosGroupId"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div class="source" v-if="obj.sourceType == 1042101">
+        <div class="showgoods">
+          <div class="xz" @click="addGoods">+选择分组商品</div>
+          <div class="xz-desc">此页面最多显示前<span>50</span>个，已添加<span>0</span>个</div>
+        </div>
+        <div class="show-set">
+          <div class="goods-img"><img src="../../../assets/images/0.jpg" alt=""></div>
+          <div class="goods-desc">入职体检套餐告诉对方公司甲方公司</div>
+        </div>
+      </div>
+    </div>
+
+    <el-dialog title="选择商品" :visible.sync="chose">
+      <el-input placeholder="请输入内容" v-model="input" class="input-with-select" size="mini" style="width: 300px;">
+        <el-button slot="append" icon="el-icon-search"></el-button>
+      </el-input>
+      <el-table :data="gridData" size="mini">
+        <el-table-column property="date" label="名称"></el-table-column>
+        <el-table-column property="name" label="商品数"></el-table-column>
+        <el-table-column property="address" label="分组时间"></el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <div style="padding: 10px;">
+      <el-button v-if="!property.exist" @click="addComponent()">添加组件</el-button>
+      <el-button v-if="pageId != 0" type="primary" @click="onSubmit()">提交</el-button>
+<!--      <el-button v-else type="primary" @click="newPage()">新建页面</el-button>-->
+      <el-button v-else type="primary" @click="newPage()">提交</el-button>
+    </div>
+  </div>
+</template>
+
+<script>
+    import {jvCosGroupQuery} from '@/api/api.js'
+
+    export default {
+        name: "knowledgeOfPay",
+        props: {
+            property: {
+                type: Object,
+            },
+
+            data: {
+                type: Array,
+            }
+        },
+        watch: {
+            obj: {
+                handler(newVal) {
+                    this.dataList[this.index] = newVal
+                },
+                deep: true
+            },
+
+            'data'() {
+
+                this.ifIsGetData()
+
+                // if (this.property.exist) {
+                //     this.dataList = this.data
+                //     this.dataList.forEach((item, index) => {
+                //         if (this.property.comUrl == item.comUrl) {
+                //             this.obj = this.data[index]
+                //             this.index = index
+                //             this.sourceIds = parseInt(this.data[index].sourceIds.join(''))
+                //             // console.log(this.obj)
+                //             // this.obj.sourceType = 1042101
+                //         }
+                //     })
+                // }
+            }
+        },
+        data() {
+            return {
+                chose: false,
+
+                pageId: '',
+
+                obj: {
+                    // detailsId: '',
+                    // comId: '',
+                    // detailsName: '',
+                    // sourceType: '',
+                    // listStyle: '',
+                    // sourceIds: [],
+                    // sort: '',
+                },
+
+                typeList: {},
+
+                groupingList: [],
+
+                sourceIds: '',
+
+                dataList: [],
+
+                index: '',
+
+                gridData: [],
+                input: '',
+            }
+        },
+
+        created() {
+            this.pageId = this.$route.query.pageId
+            this.getMicroDetailSpinner()
+            this.getJvCosGroupQuery()
+            this.obj = this.property.componentDetails
+            // console.log(this.data)
+            // console.log(this.property)
+            this.ifIsGetData()
+            // if (this.property.exist) {
+            //     this.dataList = this.data
+            //     this.dataList.forEach((item, index) => {
+            //         if (this.property.comUrl == item.comUrl) {
+            //             this.obj = this.data[index]
+            //             this.index = index
+            //             this.sourceIds = parseInt(this.data[index].sourceIds.join(''))
+            //             // console.log(this.obj)
+            //             // this.obj.sourceType = 1042101
+            //         }
+            //     })
+            // }
+
+        },
+        methods: {
+
+            ifIsGetData() {
+                if (this.property.exist) {
+                    this.dataList = this.data
+                    this.dataList.forEach((item, index) => {
+                        if (this.property.comId == item.comId) {
+                            this.obj = this.data[index]
+                            this.index = index
+                            // this.sourceIds = parseInt(this.data[index].sourceIds.join(''))
+                            this.sourceIds = this.data[index].sourceIds.join('')
+                            // console.log(this.obj)
+                            // this.obj.sourceType = 1042101
+                        }
+                    })
+                }
+            },
+
+
+            onSelectGroup(val) {
+                console.log(val)
+                if (this.obj.sourceType == 1042102) {
+                    this.obj.sourceIds = []
+                    this.sourceIds = val
+                    this.obj.sourceIds.push(val)
+                } else if (this.obj.sourceType == 1042101) {
+                    this.obj.sourceIds.push(val)
+                }
+            },
+
+            getMicroDetailSpinner() {
+                this.$axios({
+                    url: 'micro/detail/spinner',
+                    method: 'post',
+                    data: {}
+                }).then(res => {
+                    this.typeList = res.data.data
+                    // console.log(this.typeList)
+                })
+            },
+
+            // getDecorationList() {
+            //     getPackagesProductGroupDecorationList({
+            //         pageParam: {
+            //             pageSize: 20,
+            //             pageNum: 1,
+            //         },
+            //         packagesProductGroup: {
+            //             orgId: localStorage.getItem('orgId'),
+            //             name: ''
+            //         }
+            //     }).then(res => {
+            //         this.groupingList = res.data.packagesProductGroupList
+            //     })
+            // },
+
+            getJvCosGroupQuery() {
+                jvCosGroupQuery({
+                    orgId: localStorage.getItem('orgId'),
+                    groupType: 'COS'
+                }).then(res => {
+                    // console.log(res)
+                    this.groupingList = res.data
+                    // this.sourceIds = this.groupingList[0].cosGroupId
+                })
+            },
+
+            onSubmit() {
+                this.$emit('onSubmit', this.dataList)
+            },
+
+            addGoods() {
+                this.chose = true;
+            },
+
+            addComponent() {
+                if (!this.sourceIds) {
+                    return this.$message({
+                        type: 'error',
+                        message: '分组不能为空!'
+                    })
+                }
+
+                this.$emit('addComponent',this.obj)
+            },
+
+            newPage() {
+                this.$emit('newPage',this.dataList)
+            }
+
+        },
+        components: {}
+    }
+</script>
+
+<style scoped>
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    margin-left: 10px;
+    padding-left: 50px;
+    width: 700px;
+    min-height: 530px;
+    border: 1px solid #ededed;
+    box-sizing: border-box;
+    /*overflow-y: paged-y;*/
+    background: whitesmoke;
+  }
+
+  .title {
+    margin-bottom: 10px;
+    color: #040B1C;
+    font-size: 16px;
+    width: 600px;
+    height: 60px;
+    line-height: 60px;
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+  .source {
+    margin-top: 20px;
+  }
+
+  .showgoods {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    width: 600px;
+    background-color: #fff;
+    box-sizing: border-box;
+  }
+
+  .xz {
+    width: 120px;
+    height: 30px;
+    float: left;
+    border: dashed 1px #0076FF;
+    color: #0076FF;
+    line-height: 30px;
+    text-align: center;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .xz-desc {
+    margin-left: 10px;
+    color: #7c7b7b;
+  }
+
+  .show-set {
+    color: #040B1C;
+    font-size: 14px;
+    width: 600px;
+    height: 70px;
+    background-color: #fff;
+    overflow: hidden;
+  }
+
+  .goods-img {
+    float: left;
+    width: 50px;
+    height: 50px;
+    margin-top: 10px;
+    margin-left: 10px;
+  }
+
+  .goods-img img {
+    width: 100%;
+  }
+
+  .goods-desc {
+    float: left;
+    line-height: 70px;
+    margin-left: 20px;
+  }
+
+</style>
+

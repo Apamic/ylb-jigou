@@ -1,0 +1,514 @@
+<template>
+  <div class="wrapper" >
+    <div class="title"> 海报
+<!--      <span v-if="property.exist">以添加</span>-->
+    </div>
+    <div style="flex: 1;width: 600px;">
+      <ul ref="parentNode" @dragover="dragoverHandler">
+        <li class="list" v-for="(item,index) in obj.bannerList" draggable="true"  @dragstart="dragstartHandler"  @drop="dropHandler(index)" @mousedown="mousedown(index)" @mοuseup="mοuseup(index)" >
+          <div style="padding-right: 20px;">
+            <el-upload
+              class="avatar-uploader"
+              :action="baseUrl"
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload">
+              <img v-if="item.photoUrl" :src="item.photoUrl" class="avatar">
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+          </div>
+          <div style="flex: 1;position: relative;">
+            <div class="close" @click="close(item)">x</div>
+            <!--            <el-input placeholder="请输入标题" v-model="bannerList[index].title" size="mini" style="margin-bottom: 15px;">-->
+            <!--              <template slot="prepend">&nbsp;&nbsp;标题&nbsp;</template>-->
+            <!--            </el-input>-->
+            <div class="link" style="display: inline-block;">
+              <span v-if="item.bannerType == 'MY' || item.bannerType == 'GROUP'">默认链接</span>
+              <span v-if="item.bannerType == 'LINK'">自定义链接</span>
+              <span v-if="item.bannerType == 'HOMEPAGE'">微页面链接</span>
+            </div>
+<!--            <el-input placeholder="请输入链接" v-model="item.linkUrl" size="mini" style="width: 200px" v-if="">-->
+<!--              <el-select v-if="item.bannerType == 'HOMEPAGE'" class="sel" size="small" v-model="item.pageId" placeholder="请选择">-->
+<!--                <el-option-->
+<!--                  v-for="item in options"-->
+<!--                  :key="item.pageId"-->
+<!--                  :label="item.pageName"-->
+<!--                  :value="item.pageId">-->
+<!--                </el-option>-->
+<!--              </el-select>-->
+<!--              <template slot="prepend">-->
+<!--                <span v-if="item.bannerType == 'MY' || item.bannerType == 'GROUP'">默认链接</span>-->
+<!--                <span v-if="item.bannerType == 'LINK'">自定义链接</span>-->
+<!--                <span v-if="item.bannerType == 'HOMEPAGE'">微页面链接</span>-->
+<!--              </template>-->
+<!--            </el-input>-->
+            <el-input v-if="item.bannerType == 'MY'"  style="width: 200px" size="small" v-model="my"  placeholder="请输入内容" disabled></el-input>
+            <el-input v-if="item.bannerType == 'GROUP'"  style="width: 200px" size="small" v-model="group" placeholder="请输入内容" disabled></el-input>
+            <el-input v-if="item.bannerType == 'LINK'"  style="width: 200px" size="small" v-model="item.linkUrl" placeholder="请输入内容" disabled></el-input>
+            <el-select v-if="item.bannerType == 'HOMEPAGE'" class="sel" size="small" v-model="item.pageId"
+                       placeholder="请选择">
+              <el-option
+                v-for="item in options"
+                :key="item.pageId"
+                :label="item.pageName"
+                :value="item.pageId">
+              </el-option>
+            </el-select>
+            <el-dropdown @command="handleCommand($event,index)" trigger="click" placement="bottom-start" style="margin-left: 10px">
+            <span class="el-dropdown-link">
+              修改<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="item.bannerType" v-for="(item,index) in selectType" :key="index">{{item.typeName}}</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+<!--            <el-select v-if="item.bannerType == 'LINK'" class="sel" size="small" v-model="item.pageId" placeholder="请选择">-->
+<!--              <el-option-->
+<!--                v-for="item in options"-->
+<!--                :key="item.pageId"-->
+<!--                :label="item.pageName"-->
+<!--                :value="item.pageId">-->
+<!--              </el-option>-->
+<!--            </el-select>-->
+          </div>
+        </li>
+      </ul>
+      <div class="add" @click="add()">
+        <p style="color: #3a8ee6">+ 添加轮播图</p>
+        <p style="color: #999999">建议尺寸750*280像素</p>
+      </div>
+      <p style="color: #999999;font-size: 14px">最多添加12个轮播图,可拖拽排序.</p>
+    </div>
+    <div style="padding: 10px;">
+      <el-button v-if="!property.exist" @click="addComponent()">添加组件</el-button>
+      <el-button v-if="pageId != 0" type="primary" @click="onSubmit()">提交</el-button>
+<!--      <el-button v-else type="primary" @click="newPage()">新建页面</el-button>-->
+      <el-button v-else type="primary" @click="newPage()">提交</el-button>
+    </div>
+
+
+    <el-dialog title="输入链接" :visible.sync="dialogTableVisible" width="500px">
+      <el-input v-model="obj.bannerList[bannerIndex].linkUrl" size="small"></el-input>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogTableVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="dialogTableVisible = false" size="small">确 定</el-button>
+      </div>
+    </el-dialog>
+
+  </div>
+
+</template>
+
+<script>
+    import baseUrl from '@/api/base.js'
+
+    export default {
+        name: "poster",
+        props: {
+            property: {
+                type: Object,
+            },
+
+            data: {
+                type: Array,
+            },
+
+            boxIndex: {
+                type: Number
+            }
+        },
+        watch: {
+            obj: {
+                handler(newVal) {
+                    this.dataList[this.index] = newVal
+                },
+                deep: true
+            },
+
+            'property.exist'() {
+
+                this.ifIsGetData()
+
+                // this.dataList = this.data
+                // this.dataList.forEach((item, index) => {
+                //     if (this.property.comUrl == item.comUrl) {
+                //         this.obj = this.data[index]
+                //         this.index = index
+                //     }
+                // })
+            },
+            'boxIndex'() {
+
+                console.log('传来的下标',this.boxIndex)
+                // this.dataList = this.data
+                // this.obj = this.dataList[this.boxIndex]
+                // this.sourceIds = this.data[this.boxIndex].sourceIds.join('')
+            }
+        },
+        data() {
+            return {
+                listItem: {
+                    // title: '',
+                    photoId: '',
+                    photoUrl: '',
+                    linkUrl: '',
+                },
+
+                baseUrl: '',
+
+                itemIndex: '',
+
+                pageId: '',
+
+                obj: {},
+
+                index: '',
+
+                dataList: [],
+
+                draging: null,//被拖拽的对象
+                target: null, //目标对象
+                clientX: '',
+                clientY: '',
+                n: 0,
+
+                selectType: [],
+                dialogTableVisible: false,
+
+                options: [],
+
+                my: '我的',
+                group: '小组',
+
+                bannerIndex: 0,
+            }
+        },
+
+        created() {
+            this.pageId = this.$route.query.pageId
+            this.baseUrl = baseUrl + 'upload/res'
+            this.obj = this.property.componentDetails
+            this.ifIsGetData()
+            this.getSelectList()
+            this.getMicroPages()
+            // if (this.property.exist) {
+            //     this.dataList = this.data
+            //     this.dataList.forEach((item, index) => {
+            //         if (this.property.comUrl == item.comUrl) {
+            //             this.obj = this.data[index]
+            //             this.index = index
+            //         }
+            //     })
+            // }
+
+
+            document.body.ondrop = event => {
+                event.preventDefault();
+                event.stopPropagation();//解决新打开窗口
+            }
+
+        },
+
+        mounted() {
+
+            // this.$refs.parentNode.
+        },
+
+        methods: {
+
+            getMicroPages() {
+                this.$axios({
+                    url: 'micro/pages',
+                    method: 'post',
+                    data: {}
+                }).then(res => {
+                    console.log(res)
+                    this.options = res.data.data
+                })
+            },
+
+            handleCommand($event,index) {
+                if ($event == 'LINK') {
+                    this.dialogTableVisible = true
+                }
+
+                this.bannerIndex = index
+                this.obj.bannerList[this.bannerIndex].bannerType = $event
+            },
+
+            getSelectList() {
+                this.$axios({
+                    url: 'micro/link/type',
+                    method: 'post',
+                    data: {}
+                }).then(res => {
+                    this.selectType = res.data.data
+
+                })
+            },
+
+            ifIsGetData() {
+                if (this.property.exist) {
+                    this.dataList = this.data
+                    this.dataList.forEach((item, index) => {
+                        if (this.property.comId == item.comId) {
+                            this.obj = this.data[index]
+                            this.index = index
+                            // this.sourceIds = this.data[index].sourceIds.join('')
+                            // console.log(this.obj)
+                            // this.obj.sourceType = 1042101
+                        }
+                    })
+                }
+            },
+
+            mousedown(index) {
+                this.itemIndex = index
+            },
+
+            dropHandler(index) {
+                this.obj.bannerList[this.itemIndex] = this.obj.bannerList.splice(index, 1, this.obj.bannerList[this.itemIndex])[0]
+            },
+
+
+            dragstartHandler(ev) {
+                // console.log("dragStart")
+                ev.dataTransfer.setData("text/plain", '1')
+                // console.log('开始',this.itemIndex)
+                // console.log(ev)
+            },
+
+            dragoverHandler(ev) {
+                ev.preventDefault() //显示可释放标识
+                // this.clientX = ev.clientX
+                // this.clientY = ev.clientY
+                // console.log('移动',ev)
+                // console.log('ul的高',this.$refs.parentNode.getBoundingClientRect().height)
+                //
+                // console.log('li距离',ev.clientY)
+                // console.log('li距离 dragover',ev)
+                // console.log('距离',this.$refs.parentNode.offsetTop)
+                // this.n =  Math.round((this.$refs.parentNode.getBoundingClientRect().height - this.clientY)/107)
+
+                // this.n = Math.round((this.clientY - this.$refs.parentNode.offsetTop)/111)
+                //
+                // this.n = Math.round((this.clientY - this.$refs.parentNode.scrollTop)/111)
+                // console.log('结束',this.n)
+            },
+
+            close(item) {
+
+                if (this.obj.bannerList.length == 1) {
+                    return
+                } else {
+                    this.obj.bannerList.splice(this.obj.bannerList.indexOf(item), 1)
+                }
+
+            },
+
+            add() {
+
+                if (this.obj.bannerList.length >= 12) {
+                    return this.$message({
+                        type: 'info',
+                        message: '最多添加12个轮播图!',
+                    })
+                }
+
+                this.obj.bannerList.push({
+                    photoId: '',
+                    photoUrl: '',
+                    linkUrl: '',
+                    bannerType: 'MY',
+                    pageId: '',
+                })
+            },
+
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isPNG = file.type === 'image/png';
+                const isLt2M = file.size / 1024 / 1024 < 5;
+
+                if (!isJPG && !isPNG) {
+                    this.$message.error('上传头像图片只能是 JPG,PNG 格式!');
+                    return isJPG && isPNG
+                }
+
+                // if (!isLt2M) {
+                //     this.$message.error('上传头像图片大小不能超过 5MB!');
+                //     return isLt2M
+                // }
+            },
+
+            handleAvatarSuccess(res, file) {
+                // console.log(this.itemIndex)
+                // console.log(res)
+                this.obj.bannerList[this.itemIndex].photoId = res.data.recId
+                this.obj.bannerList[this.itemIndex].photoUrl = URL.createObjectURL(file.raw)
+
+            },
+
+            ifError() {
+                if (this.obj.bannerList.length == 0) {
+                    return this.$message({
+                        type: 'error',
+                        message: '没有添加轮播图!',
+                    })
+                }
+
+            },
+
+            onSubmit() {
+                // console.log(this.dataList)
+                this.ifError()
+                this.$emit('onSubmit', this.dataList)
+            },
+
+            addComponent() {
+                this.ifError()
+                this.$emit('addComponent', this.obj)
+            },
+
+            newPage() {
+                this.ifError()
+                this.$emit('newPage', this.dataList)
+            },
+
+            _index(el) {
+                let domData = Array.from(this.$refs.parentNode.childNodes);
+                return domData.findIndex(i => i.innerText == el.innerText);
+            }
+        },
+        components: {}
+    }
+</script>
+
+<style>
+  /*p, ul, li {*/
+  /*  padding: 0;*/
+  /*  margin: 0;*/
+  /*  list-style: none;*/
+  /*}*/
+</style>
+
+<style scoped>
+  p, ul, li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .link span {
+    font-size: 12px;
+    color: #909399;
+  }
+
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    margin-left: 10px;
+    padding-left: 50px;
+    width: 700px;
+    height: 530px;
+    border: 1px solid #ededed;
+    box-sizing: border-box;
+    overflow: auto;
+    background: whitesmoke;
+  }
+
+  .title {
+    margin-bottom: 10px;
+    color: #040B1C;
+    font-size: 16px;
+    width: 600px;
+    height: 60px;
+    line-height: 60px;
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+
+  .wrapper div ul li {
+    padding: 10px;
+    margin-bottom: 15px;
+    background: #ffffff;
+    border-radius: 4px;
+  }
+
+
+  .avatar-uploader >>> .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .avatar-uploader >>> .el-upload:hover {
+    border-color: #409EFF;
+  }
+
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 187px;
+    height: 70px;
+    line-height: 70px;
+    text-align: center;
+  }
+
+  .avatar {
+    width: 187px;
+    height: 70px;
+    display: block;
+  }
+
+  .list {
+    display: flex;
+  }
+
+  .add {
+    cursor: pointer;
+    background: #ffffff;
+    border-radius: 4px;
+  }
+
+  .add p {
+    font-size: 16px;
+    text-align: center;
+    line-height: 30px;
+  }
+
+  .close {
+    width: 25px;
+    height: 25px;
+    background: #e4e3e3;
+    font-size: 16px;
+    line-height: 21px;
+    text-align: center;
+    border-radius: 50%;
+    position: absolute;
+    top: -25px;
+    right: -25px;
+    cursor: pointer;
+    /*z-index: 0;*/
+    display: none;
+  }
+
+  .list:hover .close {
+    display: block;
+  }
+
+  .el-dropdown-link {
+    cursor: pointer;
+    color: #409EFF;
+  }
+
+  .el-icon-arrow-down {
+    font-size: 12px;
+  }
+
+  .el-dropdown-menu__item {
+    padding: 0 20px;
+  }
+</style>

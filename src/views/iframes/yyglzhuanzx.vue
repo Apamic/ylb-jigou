@@ -1,0 +1,541 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="style-box">
+      <div style="width: 100%;">
+        <div class="zhenge">
+          <div class="yggl-ym">
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+              <el-tab-pane label="转诊审批人" name="first">
+                <el-alert type="warning">
+<!--                  <p>1.审批人会在医联邦APP收到上转或下转的通知并进行处理</P>-->
+<!--                  <p>2.多个客服人员按照饱和度进行分配，新接入的客户，分配到当前饱和度最低的客服 , 若多个客服饱和度相同随机分配 【接待饱和度 = （已接待人数 / 100）%】</P>-->
+<!--                  <p>3.离线的客服不能接受到客服消息，超过1分钟未被接待的客户自动转接到其他客服，如客服都未上线则客服对话转接到第1个人客服人员</P>-->
+                  <p>审批人暂时只能设置1个</p>
+                </el-alert>
+                <el-row class="tou-btn">
+                  <el-button type="primary" @click="dialogFormVisible = true">
+                    编辑审批人
+                  </el-button>
+                  <!--                  <el-button @click="onDelete()">删除</el-button>-->
+                </el-row>
+                <!--添加审批人弹出框  开始--------------------------------------->
+                <div class="tanckbig">
+                  <el-dialog title="添加审批人" :visible.sync="dialogFormVisible">
+                    <div style="width: 40%;">
+                      <el-input placeholder="请输入内容" v-model="input3">
+                        <template slot="prepend">医生：</template>
+                        <el-button slot="append" @click="getUserAll(input3),input3 = null">查询</el-button>
+                      </el-input>
+                    </div>
+                    <div class="hxmbiaoge2">
+                      <el-table ref="multipleTable" :data="userAll" tooltip-effect="dark"
+                                style="width: 100%"
+                                size="mini"
+                      >
+                        <el-table-column prop="drId" label="医生编号" width="180px">
+                        </el-table-column>
+                        <el-table-column prop="nameCn" label="姓名">
+                        </el-table-column>
+                        <el-table-column prop="officeTypeName" label="行政级别">
+                        </el-table-column>
+                        <el-table-column prop="deptName" label="科室">
+                        </el-table-column>
+                        <el-table-column prop="titlesName" label="职称">
+                        </el-table-column>
+                        <el-table-column label="操作" width="100">
+                          <template slot-scope="scope">
+                            <el-button v-if="scope.row.hasAdd == 1" type="text" size="small"
+                                       @click="dialogFormVisible = true">已添加
+                            </el-button>
+                            <el-button v-if="scope.row.hasAdd == 0" type="text" size="small"
+                                       @click="addUser(scope.row.drId)">添加
+                            </el-button>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                    <div slot="footer" class="dialog-footer fenye">
+                      <el-pagination
+                        @current-change="handleCurrentChange"
+                        :current-page="pageNum"
+                        :page-size="10"
+                        layout="total, prev, pager, next, jumper"
+                        :total="total">
+                      </el-pagination>
+                    </div>
+                  </el-dialog>
+
+                </div>
+                <!--分配医生弹出框  结束-------------------------------------->
+                <div class="hxmbiaoge2">
+                  <el-table ref="multipleTable" :data="user" tooltip-effect="dark"
+                            style="width: 100%">
+                    <el-table-column type="index" width="80px">
+                    </el-table-column>
+                    <el-table-column prop="nameCn" label="姓名">
+                    </el-table-column>
+                    <el-table-column prop="deptName" label="科室">
+                    </el-table-column>
+                    <el-table-column prop="titlesName" label="职称">
+                    </el-table-column>
+                    <el-table-column prop="officeTypeName" label="行政级别">
+                    </el-table-column>
+                    <el-table-column prop="status" label="当前状态">
+                      <template slot-scope="scope">
+                        <span style="color: red;" v-if="scope.row.status == 0">离线</span>
+                        <span style="color: #67c23a" v-if="scope.row.status == 1">在线</span>
+                      </template>
+                    </el-table-column>
+
+                    <el-table-column label="操作" width="120">
+                      <template slot-scope="scope">
+                        <!--                        <el-button type="text" @click="dialogFormVisible = true" size="small">分配</el-button>-->
+                        <el-button type="text" size="small" @click="onDelete(scope.row.drId)">删除</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </el-tab-pane>
+
+              <el-tab-pane class="zhuanztj" label="转诊统计">
+                <el-tabs v-model="activeName1" type="card" @tab-click="handleClick" name="first">
+                  <el-tab-pane label="转诊总览" name="first">
+                    <div class="zhuanztitle">科室转诊明细统计</div>
+                    <div class="zhuanzmxbiao">
+                      <el-table :data="deptList" style="width: 100%"
+                                :default-sort="{prop: 'date', order: 'descending'}">
+                        <el-table-column type="index" label="序号"></el-table-column>
+                        <el-table-column property="deptName" label="科室"></el-table-column>
+                        <el-table-column prop="outUpNum" label="转出(上转)次数" sortable></el-table-column>
+                        <el-table-column prop="outDownNum" label="转出(下转)次数" sortable ></el-table-column>
+                        <el-table-column prop="inUpNum" label="转入(上转)次数" sortable ></el-table-column>
+                        <el-table-column prop="inDownNum" label="转入(下转)次数" sortable ></el-table-column>
+                      </el-table>
+                      <div slot="footer" class="dialog-footer fenye">
+                        <el-pagination
+                          @current-change="deptCurrentChange"
+                          @size-change="deptSizeChange"
+                          :page-sizes="[5, 10, 15, 20]"
+                          :current-page="deptNum"
+                          :page-size="deptPageSize"
+                          layout="total, prev, pager, next, jumper, sizes"
+                          :total="deptTotal">
+                        </el-pagination>
+                      </div>
+                    </div>
+                    <div class="zhuanztitle m-t-20">医生转诊明细统计</div>
+                    <div class="zhuanzmxbiao">
+                      <el-table :data="drList" style="width: 100%"
+                                :default-sort="{prop: 'date', order: 'descending'}">
+                        <el-table-column type="index" label="序号"></el-table-column>
+                        <el-table-column property="drName" label="医生"></el-table-column>
+                        <el-table-column prop="outUpNum" label="转出(上转)次数" sortable ></el-table-column>
+                        <el-table-column prop="outDownNum" label="转出(下转)次数" sortable ></el-table-column>
+                        <el-table-column prop="inUpNum" label="转入(上转)次数" sortable ></el-table-column>
+                        <el-table-column prop="inDownNum" label="转入(下转)次数" sortable ></el-table-column>
+                      </el-table>
+                      <div slot="footer" class="dialog-footer fenye">
+                        <el-pagination
+                          @current-change="drCurrentChange"
+                          @size-change="drSizeChange"
+                          :page-sizes="[5, 10, 15, 20]"
+                          :current-page="drNum"
+                          :page-size="drPageSize"
+                          layout="total, prev, pager, next, jumper, sizes"
+                          :total="drTotal">
+                        </el-pagination>
+                      </div>
+                    </div>
+                  </el-tab-pane>
+                  <el-tab-pane label="转诊明细" name="second">
+                    <ul class="zhuanzmxul ulli4">
+                      <li>
+                        <p>总转诊数</p>
+                        <h2>{{data.totalRefNum}}</h2>
+                      </li>
+                      <li>
+                        <p>上转数量</p>
+                        <h2>{{data.totalUpRefNum}}</h2>
+                      </li>
+                      <li>
+                        <p>下转数量</p>
+                        <h2>{{data.totalDownRefNum}}</h2>
+                      </li>
+                      <li>
+                        <p>转诊平均耗时</p>
+                        <h2>{{data.avgRefUseTime}}</h2>
+                      </li>
+                    </ul>
+                    <div class="zhuanzmxbiao m-t-20">
+                      <el-table :data="defailLsit" style="width: 100%"
+                                :default-sort="{prop: 'date', order: 'descending'}">
+                        <el-table-column type="index" label="序号"></el-table-column>
+                        <!--                        <el-table-column property="applicationDoctorName" label="医生"></el-table-column>-->
+                        <el-table-column prop="timeReferral" label="转诊时间" sortable ></el-table-column>
+                        <el-table-column property="refTypeName" label="转诊方向"></el-table-column>
+                        <el-table-column property="patientName" label="患者"></el-table-column>
+                        <el-table-column property="outOrgName" label="转出医院"></el-table-column>
+                        <el-table-column property="applicationDoctorName" label="转出医生"></el-table-column>
+                        <el-table-column property="outDeptName" label="转出科室"></el-table-column>
+                        <el-table-column property="inOrgName" label="转入医院"></el-table-column>
+                        <el-table-column property="inDeptName" label="转入科室"></el-table-column>
+                        <el-table-column property="refStatusName" label="状态"></el-table-column>
+                        <el-table-column property="refUseTime" label="转诊耗时"></el-table-column>
+                      </el-table>
+                      <div slot="footer" class="dialog-footer fenye">
+                        <el-pagination
+                          @current-change="deCurrentChange"
+                          @size-change="deSizeChange"
+                          :page-sizes="[5, 10, 15, 20]"
+                          :current-page="detailNum"
+                          :page-size="dePageSize"
+                          layout="total, prev, pager, next, jumper, sizes"
+                          :total="detailTotal">
+                        </el-pagination>
+                      </div>
+                    </div>
+                  </el-tab-pane>
+                </el-tabs>
+
+                <template>
+                  <div class="zhuanztjt">
+                    <el-radio-group v-model="radio1" @change="onChangeRadio" style="margin-right: 10px;">
+                      <el-radio-button label="1">今日</el-radio-button>
+                      <el-radio-button label="2">本周</el-radio-button>
+                      <el-radio-button label="3">本月</el-radio-button>
+                      <el-radio-button label="4">全年</el-radio-button>
+                    </el-radio-group>
+                    <el-date-picker
+                      v-model="value1"
+                      type="daterange"
+                      range-separator="~"
+                      start-placeholder="开始日期"
+                      end-placeholder="结束日期"
+                      value-format="yyyy-MM-dd"
+                      @change="onChangeDate"
+                    >
+                    </el-date-picker>
+                  </div>
+                </template>
+
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+    import commonHe from '../../components/commonHe'
+
+    export default {
+        data() {
+            return {
+                radio1: '1',
+                value1: [],
+                currentPage4: 4,
+                input3: '',
+                dialogTableVisible: false,
+
+                count: 1,
+                //tab切换方法默认第二个
+                activeName: 'first',
+                activeName1: 'first',
+                dialogFormVisible: false,
+
+                user: [],
+                userAll: [],
+                pageNum: 1,
+                total: 0,
+                pageSize: 10,
+
+                deptNum: 1,
+                deptTotal: 0,
+                deptPageSize: 10,
+                deptList: [],
+
+                drNum: 1,
+                drTotal: 0,
+                drList: [],
+                drPageSize: 10,
+
+                detailNum: 1,
+                detailTotal: 0,
+                defailLsit: [],
+                dePageSize: 10,
+
+                data: {}
+
+            };
+        },
+
+        watch: {
+            'value1'() {
+                // console.log(this.value1)
+            }
+        },
+
+        created() {
+            this.userId = localStorage.getItem("userId")
+            // alert(this.userId)
+            this.getUser()
+            this.getUserAll()
+            this.getStatisticsDept()
+            this.getStatisticsDoctor()
+            this.getRecordList()
+        },
+        methods: {
+
+            getStatisticsDept() {
+                this.$axios({
+                    url: 'referral/statistics/dept',
+                    method: 'post',
+                    data: {
+                        pageNum: this.deptNum,
+                        pageSize: this.deptPageSize,
+                        timeInterval: this.radio1,
+                        timeEnd: this.value1[1],
+                        timeStart: this.value1[0]
+                    }
+                }).then(res => {
+                    this.deptList = res.data.data
+                    this.deptTotal = res.data.total
+                    console.log(res.data)
+                })
+            },
+
+            getStatisticsDoctor() {
+                this.$axios({
+                    url: 'referral/statistics/doctor',
+                    method: 'post',
+                    data: {
+                        pageNum: this.drNum,
+                        pageSize: this.drPageSize,
+                        timeInterval: this.radio1,
+                        timeEnd:  this.value1[1],
+                        timeStart:  this.value1[0]
+                    }
+                }).then(res => {
+                    this.drList = res.data.data
+                    this.drTotal = res.data.total
+                    // console.log(res.data)
+                })
+            },
+
+            getRecordList() {
+                this.$axios({
+                    url: 'referral/statistics/record/list',
+                    method: 'post',
+                    data: {
+                        pageNum: this.detailNum,
+                        pageSize: this.dePageSize,
+                        timeInterval: this.radio1,
+                        timeEnd:  this.value1[1],
+                        imeStart:  this.value1[0]
+                    }
+                }).then(res => {
+                    this.defailLsit = res.data.data
+                    this.detailTotal = res.data.total
+                    this.data = res.data
+                    // console.log(res.data)
+                })
+            },
+
+            onChangeRadio(val) {
+                this.value1 = []
+                this.radio1 = val
+                this.getStatisticsDept()
+                this.getStatisticsDoctor()
+                this.getRecordList()
+                // console.log('按钮',this.radio1)
+            },
+
+            onChangeDate(val) {
+                this.radio1 = ''
+                this.value1 = val
+                this.getStatisticsDept()
+                this.getStatisticsDoctor()
+                this.getRecordList()
+                // console.log('时间',val)
+            },
+
+            getUser() {
+                this.$axios({
+                    url: 'referral/approval/user',
+                    method: 'post',
+                    data: {
+                        "pageNum": 1,
+                        "pageSize": 10
+                    }
+                }).then(res => {
+                    this.user = res.data.data
+                })
+            },
+
+            getUserAll(input = null) {
+                this.$axios({
+                    url: 'referral/approval/user/all',
+                    method: 'post',
+                    data: {
+                        pageNum: this.pageNum,
+                        pageSize: 10,
+                        queryLimit: input,
+                    }
+                }).then(res => {
+                    this.userAll = res.data.data
+                    this.total = res.data.total
+                })
+            },
+
+            addUser(id) {
+                this.$axios({
+                    url: 'referral/approval/user/add',
+                    method: 'post',
+                    data: {
+                        drId: id
+                    }
+                }).then(res => {
+
+                    this.getUser()
+                    this.getUserAll()
+
+                    this.$message({
+                        message: '添加成功!',
+                        type: 'success'
+                    });
+                })
+            },
+
+            onDelete(id) {
+                this.$confirm('是否删除?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.$axios({
+                        url: 'referral/approval/user/delete',
+                        method: 'post',
+                        data: {
+                            drIds: [id]
+                        }
+                    }).then(res => {
+                        this.getUser()
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+            },
+
+            handleCurrentChange(val) {
+                this.pageNum = val
+                this.getUserAll()
+                // console.log(`当前页: ${val}`);
+            },
+
+            drCurrentChange(val) {
+                this.drNum = val
+                this.getStatisticsDoctor()
+            },
+
+            deptCurrentChange(val) {
+                this.deptNum = val
+                this.getStatisticsDept()
+            },
+
+            deCurrentChange(val) {
+                this.detailNum = val
+                this.getRecordList()
+            },
+
+            drSizeChange(val) {
+                this.drPageSize = val
+                this.getStatisticsDoctor()
+            },
+
+            deSizeChange(val) {
+                this.dePageSize = val
+                this.getRecordList()
+            },
+
+            deptSizeChange(val) {
+                this.deptPageSize = val
+                this.getStatisticsDept()
+            },
+
+            ygglxinj() {
+                this.$router.push("/ygglxinj")
+            },
+            onSubmit() {
+                console.log('submit!');
+            },
+
+            handleNodeClick(data) {
+                console.log(data);
+            },
+            formatter(row, column) {
+                return row.address;
+            },
+            //tab切换方法
+            handleClick(tab, event) {
+                console.log(tab, event);
+            }
+        },
+        components: {
+            commonHe
+        },
+        mounted() {
+            // let w=window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            // let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            // document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            // document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            // document.getElementById("box").style.width = (w - 280) + "px";
+            // document.getElementById("box").style.height = (h - 120) + "px";
+        }
+
+    }
+</script>
+<style lang="scss">
+  @import '../../styles/hxmstyle.css';
+
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    bottom: 0;
+    right: 0;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    width: 260px;
+    padding-left: 40px;
+  }
+
+  .hxmbiaoge2 .has-gutter th .el-checkbox {
+    display: block;
+  }
+
+</style>

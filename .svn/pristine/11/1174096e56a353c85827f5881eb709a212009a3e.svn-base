@@ -1,0 +1,623 @@
+@charset "utf-8";
+body{background-color: #F4F4F4;}
+a{text-decoration: none; color: #212121;}
+ul,p{padding: 0; margin: 0;}
+li{list-style: none;}
+.waiwei{width: 100%; position: absolute; padding-left: 200px; box-sizing: border-box;  padding-top: 70px; background-color: #f00;}
+.bjhui{background-color: #F4F4F4;}
+.m-t-15{margin-top: 15px;}
+.p-d-40{padding: 40px; width: 100%; float: left; box-sizing: border-box;}
+.p-zy-40{padding:0 40px; width: 100%; float: left; box-sizing: border-box;}
+.m-b-20{margin-bottom: 20px;}
+.m-t-20{margin-top: 20px;}
+.p-d-20{padding:20px; width:100%; float:left;}
+.p-b-40{padding-bottom: 40px;}
+.p-b-30{padding-bottom: 30px;}
+.p-zy-30{padding: 0 30px; box-sizing: border-box;}
+
+/*很多界面外围包的框*/
+.zhenge{width: 100%; height: 100%; float: left; background-color: #F5F5F5; -webkit-box-sizing: border-box; box-sizing: border-box; padding: 15px;}
+/*员工管理界面*/
+.yggl-ym{background-color: #fff; width: 100%; padding: 5px 20px; -webkit-box-sizing: border-box; box-sizing: border-box; height: 100%; overflow: hidden; overflow-y: auto;  padding-bottom: 30px;}
+.yggl-all{height: 100%;}
+
+/*员工管理··yggl.vue··············································································*/
+.yggl-zuo{border: solid 0.5px #EDEDED; width: 200px;     padding: 12px 10px;}
+.yggl-you{padding:0 15px; border: solid 0.5px #EDEDED; margin-left:10px;}
+
+/*员工管理模块 右边头部有个 搜索组合*/
+.sousuo{height: 40px; width: 100%; float: left;  -webkit-box-sizing: border-box; box-sizing: border-box;}
+.sousuo .el-input{width: 100%; padding-right: 90px; float: left; height: 40px;  -webkit-box-sizing: border-box; box-sizing: border-box;}
+.sousuo .el-button{width: 80px; position: absolute; right: 0; top: 0;}
+.sousuo .el-input .el-input__inner{width: 100%;  border-radius: 0px;  height: 32px; line-height: 32px;}
+
+/*搜索框组合样式1----内容管理里面文章分组也有用到*/
+.sousuo1{float: right; max-width: 300px; height: 40px; line-height: 40px;}
+.sousuo1 .el-input{width: 200px; }
+.sousuo1 .el-input__inner{ border-radius: 0px;  height: 32px; line-height: 32px; float: left;}
+.tou-btn .sousuo1 .el-button{border-radius: 0px; width: 90px; float: right; margin-right: 0; border: solid 0.5px #ebebeb;  height: 32px; line-height: 32px; background-color: #efefef; color: #212121;}
+
+
+/*员工管理-添加员工分组 页面的头部*/
+.tabxuantou{width: 100%; float: left; position: relative; }
+.tabxuantouul{width: 100%; float: left; padding: 0; margin: 0; border-bottom: solid 2px #E4E7ED;}
+.tabxuantouul li{float: left; padding: 0 20px; text-align: center; height: 40px; line-height: 40px; font-size: 14px;}
+.tabxuantouul li .el-button,.tabxuantouul li .el-button a{color: #333;}
+.tabxuantouul li.active .el-button,.tabxuantouul li.active .el-button a{color: #409EFF;}
+.tabxuantouul li.active{border-bottom: solid 2px #409EFF; z-index: 10; margin-bottom: -2px;}
+
+.bfbjushang20{width: 100%; float: left; margin-top: 20px;}
+
+/*固定提交按钮的高度和边角*/
+.el-input__inner,.cigystyle .hzglys-t .el-input__inner{border-radius: 0; height: 32px; line-height: 32px;}
+
+.hzglys1 .el-tabs__header{margin-bottom: 0;}
+
+.hxma-zuo{min-height: 500px;}
+.hxmwai{ height: 100%;width: 100%; float: left; }
+.hxmbfb{width:100%; float: left; overflow:auto;}
+.neibugun{width:auto; float: left; }
+.min-w-1600{min-width: 1600px; overflow-x: auto;}
+
+/*
+.hxmcont{width: 100%; float:left; padding: 15px; padding-right: 0; box-sizing: border-box; }
+.hxmcona{width:100%; float: left; background-color: #fff;}
+.hxmcona-t{height: 40px; line-height: 40px; padding: 10px 40px; box-sizing: border-box; }
+.hxmcona-t h2{margin: 0; padding: 0; font-size: 16px; color:#212121; float: left; } 
+.hxmcona-t span{float: right; padding-right: 10px; height: 40px; line-height: 40px; color: #4D4D4D; font-size: 14px;}
+
+.hxmcona-tab{width: 100%; float: left; border: none; text-align: center;  border-collapse: collapse;}
+.hxmcona-tab tr td{border-bottom: solid 1px #e0e0e0; padding:10px 0;} 
+.hxmcona-tab tr td img{text-align: left; float: left;}
+*/
+.zi1{color: #212121; font-size: 14px;}
+.hxmcona-tab td h2{text-align: center; font-size: 32px; margin: 0; padding:0; font-weight: normal;}
+.zilan h2{color: #0076FF;}
+.zizi h2{color: #6979F8;}
+.zilv h2{color: #00C48C;}
+/*左边图文样式*/
+.hxmconb-b{width: 100%; float:left; box-sizing: border-box;}
+.ztuywen{width: 100%; float:left; position: relative; margin-bottom: 20px;}
+.ztu-img{text-align: center; width: 53px; height: 68px; position: absolute; left: 0; top:0; background-color: #fff;}
+.ztu-img img{margin: auto; text-align: center; vertical-align: middle; margin:10px 0; margin-right: 5px;}
+.ztu-wen{ background-color: #F5F5F5; padding-left: 75px; height: 68px;}
+.ztu-wen div{width: 100%; float: left;}
+.biaoti1{color: #212121; font-size: 14px; font-weight: bold;}
+.miaoshu1{color: #4D4D4D; font-size: 12px; }
+.ztu-wen .biaoti1{ margin-top: 15px; margin-bottom: 5px;}
+.ztu-wen .biaoti1,.ztu-wen .miaoshu1{ outline: none; text-overflow: ellipsis; -o-text-overflow: ellipsis;  -webkit-text-overflow: ellipsis; -moz-text-overflow: ellipsis; white-space:nowrap; overflow:hidden; height:18px; width:100%; float:left;}
+
+/*图文样式*/
+.biaoti2{color: #fff; font-size: 18px; font-weight: bold;}
+.miaoshu2{color: #fff; font-size: 14px;}
+.tu-tui{width:100%; float: left; margin-bottom: 20px; position: relative; overflow: hidden;}
+.tuimg{width: 100%; float: left; overflow: hidden; z-index: 10;}
+.tuimg img{width: 100%; float: left;}
+.tu-wenzi{ position: absolute; width: 100%; text-align: center; top:50%; height: 60px; margin-top: -30px; left: 0; z-index: 200;} 
+.hxmcy{width: 98%; float:left;  padding-top: 15px; box-sizing: border-box; }
+
+/*图像上传样式*/
+.tuxiang{width:100%; float: left;  text-align: center; margin-top: 10px;}
+.tuxiang img{text-align: center; text-align: center;  margin: auto; width: 112px; padding: 10px 0;}
+.biaoti3{font-size: 18px; color: #212121; font-weight: bold;}
+.you1{text-align: center;}
+.fwbtn{width: 100%; float: left; padding: 10px 0; text-align: center;}
+.miaoshu3{font-size: 14px; color: #212121; width: 100%; float:left; text-align: center; margin-bottom: 10px; margin-top: 5px; }
+/*右边内容*/
+.younr{width: 100%; float:left; text-align: center; }
+.younr img,.younr h3,.younr p{text-align: center;}
+.younr img{margin-top: 15px;}
+.younr h3{font-size: 20px; color: #0076FF; margin: 0; padding: 0;}
+.younr p{margin-top: 15px;}
+.min-w-1300{min-width: 1300px;}
+.min-w-320{min-width: 320px;}
+/*都是前期调界面时候写的外框*/
+.hxmnrbox{box-sizing: border-box; padding: 20px; width: 100%; float: left; position: relative;}
+.hxmnrbox-a{width: 100%; float: left; position: relative; }
+.waikuang{width:100%; height:auto;  box-sizing: border-box; padding-left: 200px;}
+.yysz-ys{width:100%; height:auto;  box-sizing: border-box; padding: 15px;}
+.bfb-bjb{width: 100%; float: left; background-color: #fff; box-sizing: border-box; padding: 25px; padding-top: 10px;  }
+
+/*应用设置页面基本信息模块 yysz.vue*/
+.biaodan-hy{border-bottom: 1px #ececec solid;}
+.biaodan-hynr{padding-right: 100px; box-sizing: border-box;}
+.neirongzs{color: #666;}
+
+/*设置 字的位置*/
+.shezhi-gdy{position: absolute; right: 10px; top:0;}
+
+/*机构设置 应用设置 表单样式*/
+.biaodan .el-form-item__label{ text-align: left !important;}
+.jbxxform .biaodan-hy .el-input__inner{border: none !important; padding-left: 2px;}
+.jbxxform .el-select{width: 100%;}
+.jbxxform .biaodan-hynr textarea{border: none;}
+.jbxxform .biaodan-hy .jgsztck .el-input__inner{ border: solid 0.5px #ececec !important; border-radius: 6px;}
+.jbxxform .jgsztck .el-dialog__body input{border: solid 1px #ccc;}
+.jbxxform .jgsztck .el-dialog__body{padding-top:10px; }/*这个样式应用设置里面的基本信息弹框也有用到*/
+.jgsztck .el-form-item__label{width: 100px; position: absolute; left: 0;}
+.jgsztck .el-form-item__content{float: left; width: 100%; padding-left: 100px; box-sizing: border-box;}
+
+/*机构设置 弹出框样式*/
+.biaodan .jgsztck .el-form-item__label{text-align: right !important;}
+.biaodan .jgsztck .avatar-uploader{border: dashed 1px #ececec; text-align: center;}
+.biaodan .jgsztck .avatar-uploader p{font-size: 12px; color: #999;     line-height: initial;}
+.jgsztck .el-upload--picture-card{font-size: 12px; color: #999;     line-height: initial; padding: 20px 10px;}
+
+
+/*关注设置*/
+.guanzhusz{width: 100%;  min-height: 58px; float: left;}
+.guanzhusz .biaodan-hynr{position: relative; width: 100%;  float: left; box-sizing: border-box;}
+.guanzhusz .biaodan-hynr .el-input{width: 100%; float: left; padding-left: 70px; box-sizing: border-box;}
+.guanzhusz .biaodan-hynr img{float: left; width: 58px; height: 58px; position: absolute; left: 0;}
+.jgsztck .el-dialog__body .el-form-item{margin-bottom: 20px;}
+.biaodan-hynr img{width: 58px; height: 58px;}
+.tu-wenzi .biaoti2{padding: 5px 0;}
+
+/*.cigystyle是一个通用的外层名称，很多地方都有，通过外层找到的内层修改样式*/
+.cigystyle .el-tabs__header{ background-color: #fff; padding: 0 25px;  border-bottom: solid 0.5px #E0E0E0;}
+.cigystyle .el-tabs__nav-wrap::after{background-color: transparent;}
+.cigystyle .el-tabs__content{ background-color: #fff; padding: 5px 25px; padding-bottom: 15px; box-sizing: border-box;}
+.cigystyle .el-tabs__header{margin-bottom: 10px;}
+.cigystyle .el-table__header-wrapper{margin-top: 10px;}
+
+.xjks-k .el-select{width: 100%;}
+
+/*头部btn的样式  很多界面头部都用的是这个*/
+/**/
+.tou-btn{padding:10px 0; }
+.tou-btn .el-button{height: 32px;  padding: 0 20px; float: left; margin-right: 10px; line-height: 32px; font-size: 14px; text-align: center; border-radius: 0; }
+.yggl-you .tou-btn .el-button{padding: 0 20px;}
+.tou-btn .el-button--primary a{color: #fff;}
+.tou-btn .el-button+.el-button {  margin-left: 0;}
+
+.el-button--text a{color:#409EFF;}
+/*科室头部搜索框*/
+.keshissk{ max-width: 280px; float: right;}
+.keshissk .el-input-group__append{ border: none; padding: 0; background-color: transparent;}
+.keshissk .el-input-group__append .el-button{margin-right: 0; padding: 0; width: 80px; background-color: #0076FF; color: #fff;}
+/*按钮样式*/
+.tou-btn .el-button .shanchuhui{height: 30px; position: absolute; left: -1px; top:-1px; width: 100px; padding: 0; background-color: #fff; color:#666; border:solid 1px #e5e5e5;}
+.tou-btn .el-button .xuanzhong-btn{height: 32px; position: absolute; left: -1px; top:-1px; width: 100px; padding: 0;}
+.moren-btn{ background-color: #fff; color:#0076FF; border: solid 0.5px #0076FF; }
+.xuanzhong-btn{ background-color: #0076FF; color: #fff; }
+.xuanzhong-btn a{color: #fff;}
+
+.tsksym .el-form{background-color: #fff; padding: 20px 15px; padding-bottom: 1px;}
+.yysz-ys .lxwmbiao .el-input input{border: solid 0.5px #ececec; border-radius: 6px;}
+
+/*地址模块样式*/
+.dizhi .el-select{width: 30%;}
+.dizhi-ss .el-input{width: 70%;}
+.dizhixk,.dizhi-ss,.dizhi-ss .el-input,.dizhi-ss .el-button{float: left;}
+.dizhi-ss{ margin-left: 10px;}
+.dizhi-ss .el-button{height: 32px; padding: 0; margin: 0; line-height: 32px; margin-top: 5px; width: 80px; text-align: center;}
+
+/*科室配置样式*/
+.kspz .has-gutter th{ background-color: #EDEDED;  padding: 6px 0;  font-size: 13px; font-style: normal; font-weight: normal;}
+.kspz .el-table td,.kspz .el-table th{ color: #212121;}
+.kspz .el-table td{font-size: 14px;  padding: 10px 0;}
+
+.shanchuan-you{width: 120px; margin-top: 20px;}
+.shanchuan-you .el-upload__tip{line-height: 14px; width: 100%;}
+
+
+/*表格通用样式，很多界面的表格都有用到*/
+.hxmbiaoge2{-webkit-box-sizing: border-box; box-sizing: border-box; }
+.hxmbiaoge2 .has-gutter th{font-weight: normal; color: #212121;     background-color: #f5f5f5;  padding: 6px 0; font-size: 13px;}
+.hxmbiaoge2 .has-gutter th .el-checkbox{display: none;}
+.hxmbiaoge2 .el-checkbox{ margin-right: 5px;}
+.hxmbiaoge2 .el-checkbox__inner,.hxmbiaoge2 .el-table--enable-row-transition .el-table__body td,.hxmbiaoge2 .el-checkbox__inner::after{transition: none;}
+
+
+
+.fanye{ margin-top: 60px; position: absolute; right: 20px;}
+
+.yggl-you .el-input__inner{border-radius: 0px; height: 32px; line-height: 32px;}
+.yggl-you .el-button{height: 32px; line-height: 32px; padding: 0; border-radius: 0; margin-top: 4px;}
+
+
+.zuixiaokuan{width: 1400px; overflow-x: auto; padding-right: 15px;}
+.zuixiaokform .el-form-item{ margin-right: 80px; margin-bottom: 10px;}
+
+.ssyangshi2{float: right;}
+
+/*员工管理--新建人员--创建基本信息上传框的样式 ygglxinj.vue································································*/
+.shangchuan{position: relative;  float: left;  margin-right: 20px;     line-height: normal;}
+.shangchuan .el-upload--picture-card{ line-height: 20px;}
+.shangchuan  .el-upload { border: 0.5px dashed #d9d9d9; border-radius: 6px; cursor: pointer; position: relative; overflow: hidden; width:149px; height:149px;}
+.shangchuan .el-upload i{ width: 100%; text-align: center; margin-top: 50px;}
+.shangchuan .avatar-uploader .el-upload:hover { border-color: #409EFF; }
+.shangchuan .avatar-uploader-icon {font-size: 28px; color: #8c939d; width: 149px; text-align: center;}
+.shangchuan .avatar { width: 149px; height: 149px; display: block; }
+.imgmiaoshu{width: 100%; text-align: center ;  color: #7397c1; margin-top: 20px;}
+
+
+/*特色科室界面  图片介绍右边文字描述*/
+.rightmiaoshu{ float: right; color: #9e9e9e;  line-height: 18px; font-size: 12px; margin-top: 12px;}
+/*创建小组 界面 小组管理模块文字描述*/
+.xztpsc .rightmiaoshu{width: 200px; margin-top: 50px;}
+
+
+/*擅长疾病选择 按钮样式*/
+.yuanjiaobtn{ border-radius: 20px; padding: 12px 23px;}
+
+/*擅长疾病选择后 弹出框样式*/
+.scjbkuang .el-dialog{width: 80%;}
+.scjbkuang .el-dialog__body{ padding-top: 0;}
+.sskuang-tou{width: 100%; padding: 10px; box-sizing: border-box; background-color: #eff6ff;}
+.sskuang-tou .el-form-item__label{width: 80px;}
+.sskuang-tou .el-form-item .el-select{width: 200px;}
+.sskuang-tou .jibinginput .el-input{width: 405px;}
+.shuoming{font-size: 12px; color: #8c939d;}
+/*
+.scjbkuang2 .el-select{ width: 100%;}
+*/
+.ygglxxsc .el-upload{background-color: #fbfdff; border: 0.5px dashed #c0ccda;  border-radius: 6px; -webkit-box-sizing: border-box; box-sizing: border-box; width: 148px; height: 148px; position: relative; line-height: 146px; vertical-align: top;}
+.ygglxxsc .el-upload i{ font-size: 28px; color: #8c939d;}
+.jibenform .el-form-item{margin-bottom: 12px;}
+.el-form-item__content .line{ text-align: center;}
+
+.xuanzebtn{padding: 0; margin: 0;}
+
+/*抽成信息模块*/
+.chouchenform .el-input{width: 80%;}
+/*应用信息模块  警告提示*/
+.jingaotishi{background-color: #fef9f2; margin-bottom: 10px; border: solid 0.5px #f5e8dd; color: #cc976d; font-size: 14px; font-weight: normal;}
+.jingaotishi p{padding:10px; margin: 0;}
+.jingaotishi a{padding-left: 10px; color: #409EFF;}
+
+.baik{width: 100%; background-color: #fff; padding: 10px; box-sizing: border-box;}
+.bianjiq .ql-editor{min-height: 300px; height: auto; overflow-y: auto;}
+.bianjiq .avatar-uploader{height: 0;}
+
+.hxmdibtn{margin: 30px; }
+.hxmdibtn .el-button{ background-color: #0076FF; color: #fff; border-radius: 0; height: 32px;  padding: 0; margin: 0; width: 100px; text-align: center; font-size: 14px;}
+
+/*导入科室里面的警告提示框*/
+.drkskuang .jingaotishi{margin-top: 10px; margin-bottom: 20px;}
+
+/*新建导入科室距上的距离*/
+.xjdrks .drkskuang .jingaotishi{margin-top: -20px;}
+
+/*患者管理页面样式*/
+
+.hzglys-t{margin-top: 10px;}
+.xuank1{width: 35%; float: left;}
+.xuank1 .el-form-item{ margin-bottom: 0;}
+.zuhe{width: 65%; float: left;}
+.hzglys-t{width: 100%; float: left;}
+.hzglys-t .el-input-group__append{ background-color: #0076FF; color: #fff; border-radius: 0;}
+.hzglys-t .el-input-group__prepend{border-radius: 0;}
+.hzglys-t .el-form-item__content,.hzglys-t .el-form-item__label{height: 32px; line-height: 32px;}
+.hzglys .cigystyle .el-tabs__header,.cigystyle .el-tabs__header{ margin-bottom: 0;}
+
+
+
+.xuanzek{background-color: transparent; width: 30px; height: 30px;}
+
+.el-table_53_column_329  .cell{width: auto; background-color: transparent; float: left;}
+
+/*员工管理--权限管理模块--添加子管理员 tjzgly.vue····························································*/
+.qxxuank .el-checkbox{ width: 100%; line-height: 40px; background-color: #f4f5f7; padding-left: 20px; box-sizing: border-box;}
+.qxxuank .el-checkbox-group .el-checkbox{ width: auto; background-color: transparent; line-height: 20px;}
+.qxxuank .el-form-item__content{line-height: 20px;}
+
+.neirongk{background-color: #fff; border-radius: 8px; min-height: 360px;} 
+.m-t-15{margin-top: 15px;}
+.m-t-10{margin-top: 10px;}
+.jbxxulnr{width: 100%; margin: 0; padding: 0; margin-top: 10px;}
+.jbxxulnr li{list-style: none; min-width: 160px; float: left;  font-size: 14px; margin-bottom: 10px; margin-right: 10px;}
+
+.cigystyle .hzxqnr .el-tabs__header{background-color: transparent; margin-top: 10px; border-bottom:none; margin-bottom: 10px; box-sizing: border-box;}
+.hzxqnr .el-tabs__content{background-color: #fff; border-radius: 8px; min-height: 300px;}
+
+/*订单信息表样式*/
+.dingdanxx{margin-top: 10px;}
+.ddxxtable{border-left: solid 1px #f2f2f2;}
+.ddxxtable th{font-weight: normal; font-size: 14px; background-color:#f2f2f2; color: #333;}
+.ddxxtable td{font-weight: normal; font-size: 12px; color: #666; border-bottom: solid 1px #f2f2f2; border-right: solid 1px #f2f2f2;}
+.ddxxtable th,.ddxxtable td{padding: 8px 2px; text-align: center;}
+.ddxxtable th{padding: 10px 2px;}
+.ddxxtable ul{margin: 0; padding: 0;}
+.ddxxtable ul li{list-style: none; float: left; min-width: 130px; width: 33%; text-align: center; padding: 6px 2px; box-sizing: border-box;}
+.ddxxtable td ul li:nth-child(2){margin-left:0; max-width: 220px;}
+.ddxxtable ul li:last-child{margin-right: 0;}
+.ddxxtable ul li span,.ddxxtable ul li p{float: left; margin: 0; padding: 0;}
+.ddxxtable td:first-child{text-align: left; border-right:none;}
+.ddxxtable td:last-child{border-right: solid 1px #f2f2f2 !important;}
+.ddxxtable td img{float: left; box-sizing: border-box; margin: 5px;}
+.ddxxtable a{color:#0076ff; }
+
+/*弹出框大小样式*/
+.tanckbig .el-dialog{ width: 80%;}
+.sskuang{margin-bottom: 10px; height: 30px; line-height: 30px;}
+.sskuang span{float: left; height: 30px; line-height: 30px;}
+.sskuang .el-input-group{width: 80%;}
+.sskuang .el-input-group__append{ padding: 0; margin: 0; height: 30px; line-height: 30px; margin-left: 20px; border-radius: 0; border: none; overflow: hidden; background-color: transparent;}
+.sskuang .el-button{ background-color: #409EFF; padding: 0; margin: 0; color: #fff; height: 30px; line-height: 30px; border: none;}
+.sskuang .el-button span{ background-color: #409EFF; padding: 0; margin: 0; margin-left: 30px; width: 80px; color: #fff; height: 30px; line-height: 30px; border: none;}
+.tanckbig .el-dialog__body{box-sizing: border-box; padding: 20px;}
+.tanckbig .hxmbiaoge2{margin-top: 20px;}
+.tou-btn.tou-btn1{float: left; padding: 0;}
+
+.hzglys-t .el-input__suffix .el-input__icon{ height: 32px; line-height: 32px !important;}
+
+
+
+
+/*内容管理界面样式  开始····························································································*/
+.nrgl-t{position: relative; width: 100%; float: left; box-sizing: border-box;}
+.gdbtn{float: left; position: absolute; width: 100px; left: 0;}
+.nrgl-t .zuhe{width: 100%; float: right;  box-sizing: border-box;}
+.dandusk{ float: right; max-width: 220px; margin-right: 10px;}
+.zuhe .el-select .el-input{width: 80px;}
+.zuhe .dandusk .el-select .el-input{width: 120px;}
+.zuhe .el-form-item{ margin-bottom: 0;}
+
+.xiank180{max-width: 320px; min-width: 300px; float: right;}
+.xuanzhong-btn .el-button{ background-color: transparent; border:none; padding: 0; margin: 0;}
+.nrgl-t .xuanzhong-btn{text-align: center;  line-height: 32px;}
+
+/*内容管理表格通用样式*/
+.hxmjcbiao{width: 100%; float: left;}
+.hxmjcbiao .el-image{float: left;}
+.hxmjcbiao .el-image img{border-radius: 30px; width: 60px; height: 60px;}
+.hxmjcbiao .demonstration{ margin-top: 20px; float: left; padding-left: 10px;}
+.hxmjcbiao .el-table td,.hxmjcbiao .el-table th{padding: 5px 0;}
+.hxmjcbiao .has-gutter th{background-color: #EDEDED; padding: 0; font-weight: normal; color: #212121; height: 40px; line-height: 40px; }
+.cigystyle .hxmjcbiao .el-table__header-wrapper,.hxmjcbiao .el-table__header-wrapper{ margin-top: 15px;}
+.hxmjcbiao .el-table__body td a{color:#0076FF; margin: 0 5px; float: left; }
+
+/*内容管理表格里面图文样式----群发管理界面图文表格样式也是这样-------------*/
+.tdtuwen{padding: 6px 0; position: relative; box-sizing: border-box; }
+.tdtuwen-tu{width: 120px; height: 100px; overflow: hidden; float: left; position: absolute; left: 0;}
+.tdtuwen-tu img{max-width: 100%; float:left;}
+.tdtuwen-wen{float: left; width:100%; box-sizing: border-box; padding-left: 130px; min-height: 100px; }
+.tdtuwen-wen h2{ margin: 0; padding: 0; font-size: 16px; color: #333; text-overflow: ellipsis; -o-text-overflow: ellipsis; -webkit-text-overflow: ellipsis; -moz-text-overflow: ellipsis; white-space: nowrap; overflow: hidden; height: 20px; line-height:20px; width: 100%; float: left;} 
+.tdwensj .el-tag,.hxmjcbiao .el-tag{border-radius: 0; padding: 0 10px; margin: 0; height: 26px; line-height: 24px;}
+.tdwensj span{font-size: 12px;}
+
+/*内容管理里面文章分组头部的提示框样式*/
+.tishikuang{width: 100%; padding: 20px; box-sizing: border-box; font-size: 14px; background-color: #f2f5f9; color: #212121;} 
+
+/*内容管理界面样式  结束····························································································*/
+
+
+.el-tag + .el-tag { margin-left: 10px;}
+.button-new-tag { margin-left: 10px; height: 32px; line-height: 30px; padding-top: 0; padding-bottom: 0;}
+.input-new-tag { width: 90px; margin-left: 10px; vertical-align: bottom;}
+
+/*上传图集界面*/
+.biaodanyz{margin-top: 15px;}
+
+.shangchuantu{width: 100%; float: left;}
+.shangchuantu .el-upload--picture-card{ line-height: 20px;}
+.shangchuantu .el-upload--picture-card .el-icon-plus{ margin-top:40px;}
+.shangchuantu .imgmiaoshu{ float: left;}
+
+.xianzhiimg{max-width: 200px; height: 160px; overflow: hidden; float: left;}
+.xianzhiimg .shangchuantu{margin-top: 7px;}
+.formtable .el-textarea .el-textarea__inner{height: 148px;}
+
+.tishikuang2{float: left; margin-bottom: 15px; padding: 10px 20px; margin-top: 10px;}
+.tishikz{width: 60%; float: left;}
+.tishikz h2{font-size: 16px; color: #333; margin: 0; padding: 0;}
+.tishikz p{width: 100%; float: left; color: #666;}
+.tishiky{width: 40%; float: right; text-align: right;}
+
+
+/*内容审核界面样式  开始·······备注：很多通用的样式直接跟内容管理的一样·····················································································*/
+.nrsh .dandusk{float: left;}
+.nrsh .xiank180{float: left;}
+
+
+/*群发管理界面样式  开始····························································································*/
+.qfgl-ym{width: 100%; background-color: #fff; float: left; box-sizing: border-box; padding: 0 20px; padding-bottom: 20px;}
+.qfgl-ym .el-tabs__header{margin: 0;}
+
+/*群发管理界面下面的 跳转的  qunfa.vue界面开始····························································································*/
+.qunfa-ym .hzxqjbxx-t a{ color: #999; font-size: 14px; padding-left: 10px;}
+.qunfa-ym{padding-bottom: 20px;}
+.qunfanrk{border: solid 0.5px #ccc; position: relative; min-height: 140px; border-radius: 6px; padding: 20px; box-sizing: border-box; float: left;}
+.qunfanrk img{width: 130px; height: 100px; overflow: hidden; float: left; position: absolute; left: 20px;}
+.qunfayou{float: left; padding-left: 150px; box-sizing: border-box; width: 100%;}
+.qunfayou h2{font-size: 16px; float: left; line-height: 20px; margin: 0; font-weight: normal; padding-top: 5px;}
+.qunfayou p{float: left; margin: 0; line-height: 18px; margin-top: 5px;}
+.qunfanr .el-input__icon{line-height: 34px;}
+.qunfanr .el-form-item{margin-bottom: 10px;}
+
+.tishi{margin: 10px 0; padding: 10px; border-radius: 2px; box-sizing: border-box; font-size: 14px; font-weight: normal;}
+.tishilan{border: solid 0.5px #409EFF;  color: #409EFF;}
+.qunfanr1 .el-form-item{margin-bottom: 0;}
+.qunfanr1 .el-form-item__content,.qunfanr1 .el-form-item__label{line-height: 32px;}
+
+.tupxuan{margin-top: 20px; position: relative;}
+.tupxuan .el-checkbox.is-bordered{ height: 100px; border-radius: 50px; padding: 0; margin: 0;}
+.tupxuan .el-checkbox{width:100px; height: 100px; float: left; }
+.tupxuan .el-checkbox__input{position: absolute; top: 3px; right: 3px; z-index: 20; }
+.tupxuan .el-checkbox__inner{width: 20px; height: 20px; border-radius: 10px;}
+
+/*qunfa.vue界面下面的公众平台号图片选择样式*/
+.xuanktuw{width:100px; height: 100px; float: left;}
+.xuanktuimg{width:100px; height: 100px; float: left; z-index: 10;}
+.xuanktuimg img{width: 100%; float: left;}
+.xuanktuwen{width: 30px; height: 30px; border-radius: 15px; overflow: hidden; z-index: 30; position: absolute; bottom: 2px; right: 2px; background-color: #fff;}
+.xuanktuwen img{width: 100%; float: left;}
+
+.tupxuan .el-checkbox__label{ padding:0; margin: 0;  border-radius: 50px;  overflow: hidden;}
+.tupxuan .el-checkbox__inner::after{left: 8px; top: 3px;}
+
+/*群发日期-阅读量-发布平台等样式*/
+.fbrq{width:360px; float: left;}
+.ydl{width: 40%; float: left;}
+.fbpt{width: 100%; float: left;}
+.fbpt span{float: left; height: 30px; line-height: 30px;}
+.fbpt img{width: 30px; margin-right: 10px;}
+.fbrq span,.ydl span,.fbpt span{padding-right: 5px;}
+.qfgl-ym .hxmjcbiao .el-table td:first-child,.qfgl-ym .el-table td .cell,.qfgl-ym .el-table--border td:first-child .cell{padding-left: 0;}
+
+/*群发管理里面 第三方平台账号 界面样式*/
+.buju{box-sizing: border-box; padding: 20px 0;}
+.buju .el-row{ margin-bottom: 20px;}
+.buju .el-row:last-child { margin-bottom: 0;}
+.buju .grid-content { min-height: 180px; overflow: hidden; border: solid 0.5px #f6f6f6; position: relative;}
+.dsf-t,.dsf-b,.dsf-w{width: 100%; float:left;}
+.dsf-b{min-height: 100px;}
+.dsf-t{height: 40px; line-height: 40px; background-color: #EDEDED; color: #333; font-size: 14px; font-weight: normal;}
+.dsf-t span{padding-left: 20px;} 
+.buju .dsf-w{position: absolute; bottom: 0; height: 50px;}
+.buju .el-button{border-radius: 0; padding: 0; margin: 0; height: 32px; line-height: 32px; width: 100px; text-align: center; margin-left: 20px; }
+
+.pttuwen{width: 100%; float: left; position: relative; box-sizing: border-box;}
+.pttuwen-z{width: 80px; height: 80px; border-radius: 40px; top: 10px; float: left; box-sizing: border-box; overflow: hidden; position: absolute; left: 5px;}
+.pttuwen-z .el-image{width: 80px; height: 80px; border-radius: 40px; float: left;}
+.pttuwen-y{float: left; width: 100%; margin-top: 20px; padding-left: 90px; box-sizing: border-box; font-size: 14px;}
+.pttuwen-yx{box-sizing: border-box; font-size: 14px; float: left; width: 100%; color: #999; font-size: 12px; font-weight: normal;}
+.zuodi{float: left; height: 40px; line-height: 40px; padding-left: 10px;}
+.zuodi span,.zuodi p{float: left; font-size: 14px; font-weight: normal; padding: 0; margin: 0;}
+.zuodi .el-tag{border: none; background-color: transparent; height: 40px; line-height: 40px;}
+.youdi{width: 80px; height: 40px; line-height: 40px; text-align: center; float: right; margin-right: 10px;}
+.buju .youdi .el-button{width: 100%; float: left; margin-left: 0; background-color: transparent; border: solid 0.5px #409EFF; border-radius: 20px; color: #409EFF;}
+.buju .zuodi .el-button{ width: auto; float: left; margin-left: 5px; height: 40px; line-height: 40px; background-color: transparent; border: none;  color: #333; font-size: 18px;}
+
+.juzhong{width: 100%; text-align: center; height: 20px; line-height: 20px; position: absolute;  top:40%; margin-top: -10px;}
+.wbdms{text-align: left; padding-left: 20px; margin-top: 20px; font-weight: normal; font-size: 14px;}
+
+
+
+.bfb-m-15{width: 100%; margin-top: 25px; float: left;}
+.bfb-m-15 .el-button{width: 100px; height: 32px; line-height: 32px; border-radius: 0; padding: 0; margin: 0;}
+
+/*应用管理yygl.vue界面   开始····························································································*/
+.title-tip{width: 100%; float: left; height: 20px; line-height: 20px; color: #999; font-size: 12px;}
+
+/*应用管理--我的应用模块*/
+.wodeyyul{width: 100%; float: left; margin: 0; margin-bottom: 20px; padding: 0;}
+.wodeyyul li{width: 100%; float: left; min-height: 100px; position: relative; box-sizing: border-box; padding: 5px 10px; border-bottom: solid 0.5px #f1f1f1;}
+.wdyyultu{position: absolute; left: 0; background-color: #eee; overflow: hidden; width: 80px; height: 80px; top:50%; margin-top: -40px; border-radius: 6px;}
+.wdyyultu img{overflow: hidden; width: 100%; float: left; text-align: center;}
+.wdyyulwen{width: 100%; box-sizing: border-box; padding-left: 85px;  position: relative;}
+.wdyyulwen-s{font-size: 16px; margin-top: 10px;}
+.wdyyulwen-z{font-size: 12px; color: #999; margin-top:5px;}
+.wdyyulwen-x{ margin-top:10px;}
+.wdyyulwen-x a{font-size: 12px; color:#409EFF;}
+
+/*wdyybq是右边 停用 按钮样式*/
+.wdyybq{position: absolute; right: 10px; bottom: 20px;}
+.wdyybq .el-tag{ text-align: center; background-color: transparent; border: solid 0.5px #ccc; color: #333;}
+.wodeyyul .el-tag{border-radius: 0; height: 28px; line-height: 28px; padding: 0; width: 80px; text-align: center; }
+.wdyyulwen-s .el-tag{margin-left: 10px;}
+
+.xuanzhongbtn{background-color: #0076FF; color: #fff; border: solid 1px #0076FF;}
+.xuanzhongbtn:hover{background-color: #409EFF; color: #fff; border: solid 1px #0076FF;}
+.mrbtn{ background-color: transparent; color: #999; border: solid 1px #e4e4e4;}
+.xuanzhongbtn,.mrbtn{border-radius: 0; height: 32px; line-height: 32px; margin: 0; padding: 0 15px; text-align: center;}
+
+/*我的应用--下面的图文问诊和视频问诊都是 应用管理界面yyglsz.vue*/
+.yyglsz-ym .el-alert{margin-top: 10px;}
+.yyglsz-t{margin-top: 15px; float: left;}
+.yyglsz-t .el-button{border-radius: 0; padding:0 20px;  height: 32px; line-height: 32px;}
+.yyglsz-table{margin-top: 15px; float: left; width: 100%;}
+.yyglsz-table .el-table th{background-color: #EDEDED; color: #212121; font-weight: normal; padding: 0; height: 32px; line-height: 32px;}
+.yyglsz-table .el-table td{padding: 6px 0; border-bottom: solid 0.5px #ededed;}
+
+/*我的应用--下面的 诊后报道界面 yyglzhbd.vue*/
+.zhbdform .el-form-item{ margin-bottom: 0;}
+.zhbdform .el-form-item__label{text-align: left;}
+.zhbdform .formys{width: 50%; float: left;}
+.zhbdform .formys .el-input{ max-width: 200px;}
+.formys .el-button{ margin: 0; height: 32px; line-height: 32px; float: right; padding: 0 20px; margin-top: 3px;}
+
+
+.cigystyle .hxmbiaoge2 .el-table__header-wrapper{ margin-top: 0;}
+
+/*我的应用--下面的 护士上门界面yyglhssm.vue*/
+.beizhu{font-size: 12px; font-weight: normal; color: #999;}
+.fwsjms .el-checkbox-button,.fwsjms .beizhu{ float: left;}
+.fwsjms .beizhu{margin-left: 20px;}
+.fwsjms .el-checkbox-button__inner{padding: 12px 17.2px;}
+
+.tqyuyue .el-input,.tqyuyue span,.tqyuyue .beizhu{ float: left;}
+.tqyuyue span{margin-left: 5px;}
+.tqyuyue .beizhu{margin-left: 20px;}
+
+/*应用管理--应用中心模块*/
+.yyzx-title{width: 100%; float: left;}
+.yyzx-title h2{padding: 0; margin: 0; font-size: 16px; font-weight: normal;}
+.yyzx-title span{color: #999; font-size: 12px; margin-left: 5px; margin-top: 4px;}
+.yyzx-title h2,.yyzx-title span{float: left;}
+.yyzxnr{margin-top: 10px; margin-bottom: 20px; width: 100%; float: left;}
+.yyzxnr .wodeyyul li{width: 25%; float: left;}
+/*应用中心里面的ul*/
+.yyzxul{width: 100%; float: left; margin: 0; padding: 0;}
+.yyzxul li{width: 25%; float: left; padding: 6px; padding-left: 0; padding-right: 10px; box-sizing: border-box; }
+.yyzxulnr{width: 100%; float: left;  min-height: 100px; box-sizing: border-box; overflow: hidden; position: relative; background-color: #f3f3f3;}
+.yyzxul .wdyyultu{left: 10px;}
+.yyzxul .wdyyulwen{padding-left: 100px;}
+.yyzxul .wdyybq{bottom: auto; top: 12px; color: #999; font-size: 14px;}
+
+/*转诊上转里面 转诊统计模块的分页 和 添加审批人弹出界面的分页样式*/
+.fenye{width: 100%; text-align: right; padding: 15px 0;}
+.fenye .el-pagination__total,.fenye .el-pagination__sizes{ float: left;}
+
+
+/*转诊上转 应用设置里面的 转诊统计模块 yyglzhuanzs.vue*/
+.zhuanztjt{position: absolute; right: 0; top:0;}
+.zhuanztjt .el-radio-group .el-radio-button__inner{padding: 8px 10px; border: none;}
+.zhuanztjt .el-radio-button:first-child .el-radio-button__inner{border-radius: 4px;}
+.zhuanztjt .el-date-editor{width: 230px; padding: 3px 0;  padding-left: 8px; float: right;}
+.zhuanztjt .el-date-editor .el-range__icon{line-height: 26px;} 
+.zhuanztjt .el-range-separator{line-height: 20px;}
+.zhuanztjt .el-range__close-icon{display: none;}
+.zhuanztjt .el-radio-button__orig-radio:checked+.el-radio-button__inner{border-radius: 4px;}
+.zhuanztitle{width: 100%; float: left; height: 32px; line-height: 32px; color: #666;}
+
+.jushangfy{text-align: right; padding: 20px 10px;}
+.zhuanzmxbiao .el-table__header th{ color: #333; text-align: center;}
+.zhuanzmxbiao tr td{text-align: center;}
+
+/*转诊明细*/
+.ulli4 li{width: 25%; float: left; margin: 0; padding: 0; box-sizing: border-box;}
+.zhuanzmxul{width: 100%; float: left; margin: 10px 0;}
+.zhuanzmxul li{text-align: center; border-right: solid 1px #e0e0e0;}
+.zhuanzmxul li:last-child{border: none;}
+.zhuanzmxul li p{font-size: 14px; color: #999; margin-bottom: 0;}
+.zhuanzmxul li h2{font-size: 20px; color: #333; padding: 5px 0; margin: 0;}
+.zhuanzmxbiao{width: 100%; float: left;}
+.zhuanzmxbiao .el-table th{padding:1px 0; font-weight: normal; background-color: #f5f5f5;}
+.zhuanzmxbiao .el-table td{padding: 4px 0;}
+
+/*我的应用--下面的 知识付费yyglzsffsz.vue*/
+.yysz-ym .el-alert--warning{border-radius: 0;  background-color: #fffded;  border: solid 1px #f4efcb;}
+.yysz-ym .el-alert--warning.is-light .el-alert__description{color: #333; }
+
+.hxmggtou .gl-ul{padding-left: 40px;}
+.style-box #box{width: 100% !important; height: auto !important;}
+
+
+
+
+
+@media screen and (max-width: 1000px){
+.yyzxul li{width: 50%; float: left;}
+.hxmcona-t{padding: 10px 15px;}
+.hxmcona-tab td h2{font-size: 22px;}
+.biaoti3{font-size: 16px; font-weight: normal;}
+.biaoti2{font-size: 16px; font-weight: normal;}
+.miaoshu3{font-size: 12px;}
+.younr h3{font-size: 16px;}
+.younr p{margin-top: 5px;}
+.p-zy-30{padding: 0 10px;}
+.ztu-wen{padding-left: 65px;}
+.hxmconb-b .p-zy-40{padding: 0 15px;}
+.miaoshu2{font-size: 12px;}
+
+ }
+  
+@media screen and (min-width: 1001px) and (max-width: 1300px){
+.yyzxul li{width: 33.33%; float: left;}
+}
+
+@media screen and (min-width: 1301px){
+.yyzxul li{width: 25%; float: left;}
+}

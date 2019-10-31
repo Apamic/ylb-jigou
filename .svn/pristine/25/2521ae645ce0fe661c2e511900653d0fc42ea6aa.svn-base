@@ -1,0 +1,853 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="style-box">
+      <div id="box">
+        <template>
+          <div class="zhenge">
+            <div class="yggl-ym">
+              <el-tabs v-model="activeName" @tab-click="handleClick">
+                <el-tab-pane label="员工管理" name="first">
+                  <div class="yggl-all">
+                    <el-container>
+                      <el-aside class="yggl-zuo" width="200px">
+                        <div class="allin" @click="allIn()">全部</div>
+                        <el-tree :data="deptTree" node-key="deptId"
+                                 :props="defaultProps"
+                                 :highlight-current="true"
+                                 ref="attrList"
+                                 @node-click="handleNodeClick"
+                        >
+                        </el-tree>
+                      </el-aside>
+
+                      <el-main class="yggl-you">
+                        <el-row class="tou-btn">
+                          <el-button type="primary">
+                            <router-link :to="{path:'/ygglxinj',query:{drId: drId,deptId:deptId}}">新建人员</router-link>
+                          </el-button>
+                          <!--新建科室内容-->
+                          <el-button>
+                            <a :href="baseUrl+'doctor/export?Authorization='+token">导出</a>
+                          </el-button>
+                          <!--                          <el-button>删除</el-button>-->
+                          <el-form :inline="true" :model="formInline" class="demo-form-inline">
+                            <el-form-item label="职称">
+                              <el-select v-model="formInline.titles" placeholder="全部">
+                                <el-option
+                                  v-for="item in type.titlesList"
+                                  :key="item.titles"
+                                  :label="item.titlesName"
+                                  :value="item.titles">
+                                </el-option>
+                              </el-select>
+                            </el-form-item>
+                            <el-form-item label="行政级别">
+                              <el-select v-model="formInline.officeType" placeholder="全部">
+                                <el-option
+                                  v-for="item in type.officeList"
+                                  :key="item.officeType"
+                                  :label="item.officeName"
+                                  :value="item.officeType">
+                                </el-option>
+                              </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                              <div class="sousuo">
+                                <el-input v-model="formInline.queryTerm" placeholder="请输入医生姓名"></el-input>
+                                <el-button type="primary" @click="employeesSearch">搜索</el-button>
+                              </div>
+                            </el-form-item>
+                          </el-form>
+                        </el-row>
+                        <div>
+                          <div class="hxmbiaoge2">
+                            <el-table ref="multipleTable" :data="doctorsList" tooltip-effect="dark" style="width: 100%"
+                                      @selection-change="handleSelectionChange">
+                              <!--                              <el-table-column type="selection" width="55">-->
+                              <!--                              </el-table-column>-->
+                              <el-table-column prop="nameCn" label="姓名">
+                              </el-table-column>
+                              <el-table-column prop="drTypeName" label="员工角色">
+                              </el-table-column>
+                              <el-table-column prop="account" label="账号" width="140px">
+                              </el-table-column>
+                              <el-table-column label="性别" width="80px">
+                                <template slot-scope="scope">
+                                  <span v-if="scope.row.gender == -1">未定义</span>
+                                  <span v-if="scope.row.gender == 0">女</span>
+                                  <span v-if="scope.row.gender == 1">男</span>
+                                </template>
+                              </el-table-column>
+                              <el-table-column prop="officeTypeName" label="行政级别">
+                              </el-table-column>
+                              <el-table-column prop="deptName" label="科室">
+                              </el-table-column>
+                              <el-table-column prop="titlesName" label="职称">
+                              </el-table-column>
+                              <el-table-column prop="statusAudit" label="状态">
+                                <template slot-scope="scope">
+                                  <span v-if="scope.row.statusAudit == '1' ">注册</span>
+                                  <span v-if="scope.row.statusAudit == '2' ">提交待审</span>
+                                  <span v-if="scope.row.statusAudit == '3' ">审核</span>
+                                  <span v-if="scope.row.statusAudit == '4' ">完成</span>
+                                </template>
+                              </el-table-column>
+                              <el-table-column label="是否显示">
+                                <template slot-scope="scope">
+                                  <el-switch v-model="scope.row.statusShow"
+                                             v-if="scope.row.statusShow != -1"
+                                             :active-value="1" :inactive-value="0"
+                                             @change="statusShow(scope.row)">
+                                  </el-switch>
+                                  <span v-if="scope.row.statusShow == -1">以离职</span>
+                                </template>
+                              </el-table-column>
+                              <el-table-column label="加入时间" width="160px" prop="timeCreate">
+                                <!--                                <template slot-scope="scope">{{scope.row.timeCreate}}</template>-->
+                              </el-table-column>
+                              <el-table-column label="操作" width="160px">
+                                <template slot-scope="scope">
+                                  <el-button type="text" size="small">
+                                    <router-link :to="{path: '/ygglxinj',query: {drId: scope.row.drId,deptId: deptId}}">
+                                      编辑
+                                    </router-link>
+                                  </el-button>
+                                  <el-button type="text" size="small" @click="sortShow = true,drId = scope.row.drId">
+                                    排序
+                                  </el-button>
+                                  <!--                                  <el-button type="text" size="small">删除</el-button>-->
+                                </template>
+                              </el-table-column>
+                            </el-table>
+                          </div>
+                        </div>
+                        <div style="display: flex;justify-content: flex-end;padding: 20px;">
+                          <el-pagination background layout="total,prev, pager, next" :total="total"
+                                         @current-change="handleCurrentChange"
+                          >
+                          </el-pagination>
+                        </div>
+
+                      </el-main>
+                    </el-container>
+                  </div>
+                </el-tab-pane>
+
+                <el-tab-pane class="tsks-table" label="小组管理" name="second">
+                  <el-row class="tou-btn">
+                    <el-button type="primary">
+                      <router-link to="/cjxz">创建小组</router-link>
+                    </el-button>
+                    <div class="sousuo1">
+                      <el-input v-model="selectKey" placeholder="请输入关键字"></el-input>
+                      <el-button type="primary" @click="getGroupList(1)">搜索</el-button>
+                    </div>
+                  </el-row>
+
+                  <div class="hxmbiaoge2">
+                    <el-table ref="multipleTable" :data="groupList" tooltip-effect="dark"
+                              style="width: 100%">
+                      <el-table-column prop="gname" label="小组名称">
+                      </el-table-column>
+                      <el-table-column prop="gteamleaderName" label="队长">
+                      </el-table-column>
+                      <el-table-column prop="diseases" label="擅长">
+                      </el-table-column>
+                      <el-table-column prop="nums" label="成员数量" width="100">
+                      </el-table-column>
+                      <el-table-column prop="dynamics" label="动态数" width="100">
+                      </el-table-column>
+                      <el-table-column label="创建时间">
+                        <template slot-scope="scope">{{ scope.row.timeCreate }}</template>
+                      </el-table-column>
+                      <el-table-column label="操作" width="150">
+                        <template slot-scope="scope">
+                          <el-button type="text" size="small">
+                            <router-link :to="{path: 'cjxz',query:{groupId:scope.row.groupid}}">编辑</router-link>
+                          </el-button>
+                          <!--                          <el-button type="text" size="small">分享</el-button>-->
+                          <el-button type="text" size="small" @click="gDelete(scope.row)">删除</el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                    <div style="display: flex;justify-content: flex-end;padding: 20px;">
+                      <el-pagination background layout="total,prev, pager, next" :total="groupTotal"
+                                     @current-change="groupCurrentChange"
+                      >
+                      </el-pagination>
+                    </div>
+                  </div>
+                </el-tab-pane>
+
+                <!--                <el-tab-pane label="员工角色管理" name="third">-->
+                <!--                  <el-row class="tou-btn">-->
+                <!--                    <el-button type="primary">-->
+                <!--                      <router-link to="/ygglYgjsgl">添加角色</router-link>-->
+                <!--                    </el-button>-->
+                <!--                    <el-button>删除</el-button>-->
+                <!--                    <div class="sousuo1">-->
+                <!--                      <el-input v-model="formInline.user" placeholder="请输入医生姓名"></el-input>-->
+                <!--                      <el-button type="primary" @click="onSubmit">搜索</el-button>-->
+                <!--                    </div>-->
+                <!--                  </el-row>-->
+                <!--                  <div class="hxmbiaoge2">-->
+                <!--                    <el-table ref="multipleTable" :data="tableData4" tooltip-effect="dark"-->
+                <!--                              style="width: 100%">-->
+                <!--                      <el-table-column prop="name" type="selection" width="40">-->
+                <!--&lt;!&ndash;                        <template slot-scope="scope">&ndash;&gt;-->
+                <!--&lt;!&ndash;                          <el-checkbox :checked="scope.row.isKey== 1"/>&ndash;&gt;-->
+                <!--&lt;!&ndash;                        </template>&ndash;&gt;-->
+                <!--                      </el-table-column>-->
+                <!--                      <el-table-column prop="name" label="角色名称">-->
+                <!--                      </el-table-column>-->
+                <!--                      <el-table-column prop="name1" label="状态">-->
+                <!--                      </el-table-column>-->
+                <!--                      <el-table-column label="操作" width="200">-->
+                <!--                        <el-button type="text">-->
+                <!--                          <router-link to="/ygglYgjsgl">编辑</router-link>-->
+                <!--                        </el-button>-->
+                <!--                        &lt;!&ndash;                                                <el-button type="text" size="small">添加下级</el-button>&ndash;&gt;-->
+                <!--                        <el-button type="text" size="small">删除</el-button>-->
+                <!--                      </el-table-column>-->
+                <!--                    </el-table>-->
+                <!--                  </div>-->
+                <!--                </el-tab-pane>-->
+
+                <!--                <el-tab-pane label="权限管理" name="fourth">-->
+                <!--                  <el-tabs type="border-card">-->
+                <!--                    <el-tab-pane label="子账号管理">-->
+                <!--                      <el-row class="tou-btn">-->
+                <!--                        <el-button type="primary">-->
+                <!--                          <router-link to="/tjzgly">添加子管理员</router-link>-->
+                <!--                        </el-button>-->
+                <!--                        <div class="sousuo1">-->
+                <!--                          <el-input v-model="formInline.user" placeholder="请输入医生姓名"></el-input>-->
+                <!--                          <el-button type="primary" @click="onSubmit">搜索</el-button>-->
+                <!--                        </div>-->
+                <!--                      </el-row>-->
+                <!--                      <div class="hxmbiaoge2">-->
+                <!--                        <el-table ref="multipleTable" :data="tableData5" tooltip-effect="dark"-->
+                <!--                                  style="width: 100%">-->
+                <!--                          <el-table-column prop="name" label="账号">-->
+                <!--                          </el-table-column>-->
+                <!--                          <el-table-column prop="name1" label="联系人">-->
+                <!--                          </el-table-column>-->
+                <!--                          <el-table-column prop="name2" label="管理员角色">-->
+                <!--                          </el-table-column>-->
+                <!--                          <el-table-column prop="date" label="创建时间">-->
+                <!--                          </el-table-column>-->
+                <!--                          <el-table-column label="操作" width="160">-->
+                <!--                            <el-button type="text" size="small">-->
+                <!--                              <router-link to="/keshiRygl">人员管理</router-link>-->
+                <!--                            </el-button>-->
+                <!--                            <el-button type="text" size="small">删除</el-button>-->
+                <!--                          </el-table-column>-->
+                <!--                        </el-table>-->
+                <!--                      </div>-->
+                <!--                    </el-tab-pane>-->
+
+                <!--                    <el-tab-pane label="角色管理">-->
+                <!--                      <el-row class="tou-btn">-->
+                <!--                        <el-button type="primary">-->
+                <!--                          <router-link to="/tjzgly">添加角色</router-link>-->
+                <!--                        </el-button>-->
+                <!--                        <el-button>删除</el-button>-->
+                <!--                        <div class="sousuo1">-->
+                <!--                          <el-input v-model="formInline.user" placeholder="请输入医生姓名"></el-input>-->
+                <!--                          <el-button type="primary" @click="onSubmit">搜索</el-button>-->
+                <!--                        </div>-->
+                <!--                      </el-row>-->
+                <!--                      <div class="hxmbiaoge2">-->
+                <!--                        <el-table ref="multipleTable" :data="tableData6" tooltip-effect="dark"-->
+                <!--                                  style="width: 100%">-->
+                <!--                          <el-table-column label="角色名称">-->
+                <!--                            <template slot-scope="scope">-->
+                <!--                              <el-checkbox v-if="scope.row.name != '管理员'"/>-->
+                <!--                              <span class="demonstration">{{scope.row.name}}</span>-->
+                <!--                            </template>-->
+                <!--                          </el-table-column>-->
+                <!--                          <el-table-column prop="name1" label="状态">-->
+                <!--                          </el-table-column>-->
+                <!--                          <el-table-column label="操作" width="160">-->
+                <!--                            <el-button type="text" size="small">编辑</el-button>-->
+                <!--                            <el-button type="text" size="small">删除</el-button>-->
+                <!--                          </el-table-column>-->
+                <!--                        </el-table>-->
+                <!--                      </div>-->
+                <!--                    </el-tab-pane>-->
+                <!--                  </el-tabs>-->
+                <!--                </el-tab-pane>-->
+
+                <el-tab-pane label="员工分组" name="Fifth">
+                  <div class="tishikuang">员工分组功能可帮助您更高效地分类管理人员，让用户更加便捷找到所需医生。</div>
+                  <el-row class="tou-btn">
+                    <el-button type="primary" @click="dialogFormVisible = true,newAdd = true,title='添加分组',reset()">
+                      添加分组
+                    </el-button>
+                    <div class="sousuo1">
+                      <el-input v-model="classifyName" placeholder="组名"></el-input>
+                      <el-button type="primary" @click="getDoctorClassifies()">搜索</el-button>
+                    </div>
+                  </el-row>
+                  <div class="hxmbiaoge2">
+                    <el-table ref="multipleTable" :data="classifies" tooltip-effect="dark"
+                              style="width: 100%">
+                      <el-table-column prop="classifyName" label="分组名称">
+                      </el-table-column>
+                      <el-table-column prop="number" label="人员数">
+                      </el-table-column>
+                      <el-table-column prop="timeCreate" label="创建时间">
+                      </el-table-column>
+                      <el-table-column label="操作" width="220">
+                        <template slot-scope="scope">
+                          <el-button type="text" size="small"
+                                     @click="$router.push({path: 'peopleManagement',query:{classifyId:scope.row.classifyId}})">
+                            人员管理
+                          </el-button>
+                          <el-button type="text" size="small"
+                                     @click="dialogFormVisible = true,classform = scope.row,newAdd = false,title='编辑'">
+                            编辑
+                          </el-button>
+                          <!--                          <el-button type="text" size="small">分享</el-button>-->
+                          <el-button type="text" size="small" @click="onDelete(scope.row)">删除</el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </div>
+                  <div style="display: flex;justify-content: flex-end;padding: 20px;">
+                    <el-pagination background layout="total,prev, pager, next" :total="classTotal"
+                                   @current-change="classCurrentChange"
+                    >
+                    </el-pagination>
+                  </div>
+
+                  <el-dialog :title="title" :visible.sync="dialogFormVisible">
+                    <el-form :model="classform">
+                      <el-form-item label="分组名称" :label-width="formLabelWidth">
+                        <el-input v-model="classform.classifyName" autocomplete="off"></el-input>
+                      </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer"
+                         style="display: flex;justify-content: flex-end;padding: 5px 0;">
+                      <el-button @click="dialogFormVisible = false,newAdd = false">取 消</el-button>
+                      <el-button type="primary" v-if="newAdd" @click="addClass">确 定</el-button>
+                      <el-button type="primary" v-else @click="editClass">保 存</el-button>
+                    </div>
+                  </el-dialog>
+
+
+                </el-tab-pane>
+              </el-tabs>
+
+              <!-- 排序弹窗 -->
+              <div class="sort">
+                <el-dialog title="排序" :visible.sync="sortShow">
+                  <el-form>
+                    <el-form-item label="排序至" :label-width="formLabelWidth">
+                      <el-input v-model="sort" type="number" autocomplete="off" min="1" :max="total"></el-input>
+                      位
+                    </el-form-item>
+                  </el-form>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button @click="sortShow = false">取 消</el-button>
+                    <el-button type="primary" @click="sortSub()">确 定</el-button>
+                  </div>
+                </el-dialog>
+              </div>
+
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+    import commonHe from '../../components/commonHe'
+    import baseUrl from '@/api/base.js'
+
+
+    export default {
+        data() {
+            return {
+                deptTree: [],
+
+                title: '',
+
+                baseUrl: '',
+
+                token: '',
+
+                defaultProps: {
+                    children: 'children',
+                    label: 'deptName'
+                },
+                doctorsList: [],
+                total: 0,
+                type: {},
+                deptId: '',
+                groupList: [],
+                groupTotal: 0,
+
+                classTotal: 0,
+                pageNumGroup: 1,
+                pageNumClass: 1,
+                pageNum: 1,
+                selectKey: '',
+
+                classifyName: '',
+
+                newAdd: false,
+
+                multipleTable: [],
+
+                formLabelWidth: '100px',
+                sortShow: false,
+                sort: 1,
+
+                drId: '',
+
+                form: {
+                    delivery: false,
+                    type: [],
+                },
+
+                classform: {
+                    classifyName: '',
+                    classifyId: '',
+                },
+
+                classifies: [],
+
+                tableData2: [{
+                    paixu: '2',
+                    name: '丽丽',
+                    ygjs: '医生',
+                    zhanghao: '8965239',
+                    xingbie: '女',
+                    xzjb: '医生',
+                    keshi: '新生儿科',
+                    zhichen: '主任医师',
+                    zhuangtai: '正常',
+                    date: '2019-03-01 08:45:01'
+                }],
+                tableData3: [
+                    {
+                        name: '马霄专家团队',
+                        name1: '马霄',
+                        name2: '种植牙、牙缺损',
+                        num1: '6',
+                        num2: '28',
+                        date: '2019-03-01 08:45:01'
+                    },
+                    {
+                        name: '黄专家团队',
+                        name1: '黄冠',
+                        name2: '种植牙、牙缺损',
+                        num1: '6',
+                        num2: '28',
+                        date: '2019-08-01 08:45:01'
+                    }
+                ],
+                tableData4: [
+                    {
+                        name: '医生',
+                        name1: '正常',
+                    },
+                    {
+                        name: '护士',
+                        name1: '不正常',
+                    }
+                ],
+                tableData5: [
+                    {
+                        name: '13545295071',
+                        name1: '黄冠',
+                        name2: '财务',
+                        date: '2019-08-01 08:45:01'
+                    }
+                ],
+                tableData6: [
+                    {
+                        jiaose: '管理员',
+                        name: '管理员',
+                        name1: '正常',
+                    },
+                    {
+                        jiaose: '运营人员',
+                        name: '运营人员',
+                        name1: '正常',
+                    }
+                ],
+                tableData7: [
+                    {
+                        name: '儿科专家',
+                        num1: '8',
+                    },
+                    {
+                        name: '名医医生',
+                        num1: '6',
+                    }
+                ],
+                //以下是右边表头form
+                formInline: {
+                    queryTerm: '',
+                    officeType: '',
+                    titles: '',
+                },
+                //以上是右边表头form
+                //以下是树结构的
+                //以上是树结构的
+
+                count: 1,
+                //tab切换方法默认第二个
+                activeName: 'first',
+                dialogFormVisible: false,
+
+            };
+        },
+
+        created() {
+            this.userId = localStorage.getItem("userId")
+            this.token = localStorage.getItem("token")
+            // alert(this.userId)
+            this.baseUrl = baseUrl
+
+
+            this.getDeptTree()
+            this.getDoctors()
+            this.getTypeList()
+            this.getGroupList()
+
+
+            this.getDoctorClassifies()
+        },
+
+        methods: {
+            gDelete(item) {
+                this.$confirm('是否删除?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    // this.pageNumGroup = 1
+                    this.$axios({
+                        url: 'group/delete',
+                        method: 'post',
+                        data: {
+                            groupId: item.groupid
+                        }
+                    }).then(res => {
+                        // this.pageNumGroup = 1
+                        this.getGroupList()
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+
+            reset() {
+                this.classform = {
+                    classifyName: '',
+                    classifyId: '',
+                }
+            },
+
+            onDelete(item) {
+                this.$confirm('是否删除?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.$axios({
+                        url: 'doctor/classify/delete',
+                        method: 'post',
+                        data: {
+                            classifyId: item.classifyId
+                        }
+                    }).then(res => {
+                        // this.pageNumClass = 1
+                        this.getDoctorClassifies()
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+
+            editClass() {
+                this.$axios({
+                    url: 'doctor/classify/update',
+                    method: 'post',
+                    data: this.classform,
+                }).then(res => {
+                    console.log('edit', res)
+                    this.dialogFormVisible = false
+                })
+            },
+
+            addClass() {
+                this.$axios({
+                    url: 'doctor/classify/add',
+                    method: 'post',
+                    data: this.classform
+                }).then(res => {
+                    this.getDoctorClassifies()
+                    this.dialogFormVisible = false
+                    console.log('add', res)
+                })
+            },
+
+            getDoctorClassifies(pageNum = 1) {
+                this.$axios({
+                    url: 'doctor/classifies',
+                    method: 'post',
+                    data: {
+                        classifyName: this.classifyName,
+                        pageNum: this.pageNumClass,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    this.classifies = res.data.data
+                    this.classTotal = res.data.total
+                })
+            },
+
+            sortSub() {
+                this.$axios({
+                    url: 'doctor/sort',
+                    method: 'post',
+                    data: {
+                        drId: this.drId,
+                        sortNo: this.sort
+                    }
+                }).then(res => {
+                    this.getDoctors()
+                    this.sortShow = false
+                })
+            },
+
+            allIn() {
+                this.formInline = {
+                    queryTerm: '',
+                    officeType: '',
+                    titles: '',
+                }
+                this.deptId = ''
+
+                this.getDeptTree()
+
+                // for(var i=0;i<this.$refs.attrList.store._getAllNodes().length;i++){
+                //     this.$refs.attrList.store._getAllNodes()[i].expanded= false
+                // }
+                //
+                // this.$refs.attrList.setCurrentKey(null)
+                // console.log(this.$refs.attrList)
+
+                // this.$refs.attrList.setCheckedKeys([])
+                this.employeesSearch()
+            },
+
+            handleSelectionChange(val) {
+
+            },
+
+            getDeptTree() {
+                this.$axios({
+                    url: 'dept/tree',
+                    method: 'post',
+                    data: {}
+                }).then(res => {
+                    // console.log(res)
+                    this.deptTree = res.data.data.deptTree
+                })
+            },
+
+            getDoctors() {
+                this.$axios({
+                    url: 'doctors',
+                    method: 'post',
+                    data: {
+                        deptId: this.deptId,
+                        pageNum: this.pageNum,
+                        titles: this.formInline.titles,
+                        officeType: this.formInline.officeType,
+                        queryTerm: this.formInline.queryTerm,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    // console.log('Doctors',res)
+                    this.doctorsList = res.data.data
+                    this.total = res.data.total
+                })
+            },
+
+            getTypeList() {
+                this.$axios({
+                    url: 'doctor/add/spinner',
+                    method: 'post',
+                    data: {
+                        type: 1,
+                    }
+                }).then(res => {
+                    console.log(res)
+                    this.type = res.data.data
+                })
+            },
+
+            handleCurrentChange(val) {
+                this.pageNum = val
+                this.getDoctors()
+            },
+
+            employeesSearch() {
+                this.pageNum = 1
+                this.getDoctors()
+                // console.log(this.formInline)
+            },
+
+            handleNodeClick(data) {
+                this.deptId = data.deptId
+                this.getDoctors(1)
+                // console.log(this.$refs.attrList)
+                // console.log(data);
+
+            },
+
+            getGroupList() {
+                this.$axios({
+                    url: 'group/list',
+                    method: 'post',
+                    data: {
+                        selectKey: this.selectKey,
+                        pageNum: this.pageNumGroup,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    this.groupList = res.data.data
+                    this.groupTotal = res.data.total
+                    // console.log('list', res)
+                })
+            },
+
+            classCurrentChange(val) {
+                this.pageNumClass = val
+                this.getDoctorClassifies()
+            },
+
+            groupCurrentChange(val) {
+                this.pageNumGroup = val
+                this.getGroupList()
+            },
+
+            statusShow(val) {
+                // console.log(e)
+                console.log(val)
+                this.$axios({
+                    url: 'doctor/update',
+                    method: 'post',
+                    data: {
+                        drId: val.drId,
+                        statusShow: val.statusShow == 1 ? 1 : 0,
+                    }
+                }).then(res => {
+                    console.log(res)
+                })
+
+            },
+
+
+            ygglxinj() {
+                this.$router.push("/ygglxinj")
+            },
+
+            onSubmit() {
+
+                console.log('submit!');
+            },
+
+            //tab切换方法
+            handleClick(tab, event) {
+                // this.activeName = tab
+                console.log(tab, event);
+            }
+        },
+        components: {
+            commonHe
+        },
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+        }
+
+    }
+</script>
+
+<style scoped>
+  .hxmbiaoge2 >>> .el-checkbox {
+    display: block !important;
+  }
+
+  .sort >>> .el-input {
+    width: 200px;
+  }
+
+  .allin {
+    display: flex;
+    align-items: center;
+    padding-left: 24px;
+    height: 26px;
+    font-size: 14px;
+    color: #606266;
+    cursor: pointer;
+  }
+
+  .allin:hover {
+    background-color: #F5F7FA;
+  }
+
+</style>
+
+<style lang="scss">
+  @import '../../styles/hxmstyle.css';
+
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    width: 260px;
+    padding-left: 40px;
+  }
+</style>

@@ -1,0 +1,1261 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="paper-box">
+      <div class="notice">您可使用组件自由搭建医院内容，如添加医生、自定义页面名称、添加轮播图等，个性化装修医院主页。</div>
+
+      <div class="phone">
+        <div class="top">
+          <input v-model="page.pageName"/>
+        </div>
+        <div class="mall-box" v-if="page.detailsList" v-for="(item,index) in page.detailsList"
+             :class="{'pit': componentsList[tabIndex].exist && boxIndex == index}" @mouseover="onMouseover(index)">
+          <div class="close" @click="closemall(index)">×</div>
+          <div class="move" style="right: 40px;" @click="upGo(page.detailsList,index)">上移</div>
+          <div class="move" style="right: 70px;" @click="downGo(page.detailsList,index)">下移</div>
+<!--          <div class="edit">点击编辑</div>-->
+          <!--          <iframe :src="item.comUrl" style="width: 100%;height: 100%;border: 0;box-sizing: border-box;">-->
+
+          <!--          </iframe>-->
+          <img :src="item.comUrl" width="100%"/>
+          <!--                    <div class="bt">-->
+          <!--                        <div class="bt-l">-->
+          <!--                            {{title}}-->
+          <!--                        </div>-->
+          <!--                        <div class="bt-r">更多 ></div>-->
+          <!--                    </div>-->
+          <!--                    <div class="sets">-->
+          <!--                        <div class="set">-->
+          <!--                            <div class="img">-->
+          <!--                                <img src="../../assets/images/0.jpg" alt="">-->
+          <!--                            </div>-->
+          <!--                            <div class="desc">-->
+          <!--                                每年123大健康体检套餐中老年父母体检套餐体检套餐-->
+          <!--                            </div>-->
+          <!--                            <div class="price">-->
+          <!--                                <span class="price-now">￥<span>880</span></span>-->
+          <!--                                <span class="price-pass">￥<span>8800</span></span>-->
+          <!--                            </div>-->
+          <!--                        </div>-->
+          <!--                        <div class="set">-->
+          <!--                            <div class="img">-->
+          <!--                                <img src="../../assets/images/0.jpg" alt="">-->
+          <!--                            </div>-->
+          <!--                            <div class="desc">-->
+          <!--                                每年大健康体检套餐中老年父母体检套餐体检套餐-->
+          <!--                            </div>-->
+          <!--                            <div class="price">-->
+          <!--                                <span class="price-now">￥<span>880</span></span>-->
+          <!--                                <span class="price-pass">￥<span>8800</span></span>-->
+          <!--                            </div>-->
+          <!--                        </div>-->
+          <!--                    </div>-->
+        </div>
+        <div class="add">
+          <p>添加组件</p>
+          <div class="options">
+            <div v-for="(item,index) in componentsList" :class="{'pit': tabIndex == index,'exist':item.exist}"
+                 @click="addComponentShow(index)">
+              {{item.comName}}
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--      <div class="let-box" v-if="componentsList[tabIndex].exist">-->
+      <!--        <div v-if="componentsList[tabIndex]" class="title">{{componentsList[tabIndex].comName}} 以添加</div>-->
+      <!--        <div style="flex: 1;width: 600px;">-->
+      <!--          <el-form ref="form" :model="obj" label-width="80px">-->
+      <!--            <el-form-item label="标题名称" v-if="page.detailsList[boxIndex].detailsName">-->
+      <!--              <el-input v-model="page.detailsList[boxIndex].detailsName" style="width: 200px;"></el-input>-->
+      <!--            </el-form-item>-->
+      <!--            <el-form-item label="列表样式" v-if="page.detailsList[boxIndex].detailsName">-->
+      <!--              <el-select v-model="page.detailsList[boxIndex].listStyle" placeholder="样式">-->
+      <!--                <el-option v-for="(item,index) in typeList.listStyleList" :label="item.listStyleName"-->
+      <!--                           :value="item.listStyle" :key="item.listStyle"></el-option>-->
+      <!--              </el-select>-->
+      <!--            </el-form-item>-->
+      <!--            <el-form-item label="商品来源"-->
+      <!--                          v-if="page.detailsList[boxIndex].sourceType && page.detailsList[boxIndex].sourceType != 0">-->
+      <!--              <el-select v-model="page.detailsList[boxIndex].sourceType" placeholder="来源">-->
+      <!--                <el-option v-for="(item,index) in typeList.goodsSourceList" :label="item.sourceName"-->
+      <!--                           :value="item.sourceType" :key="item.sourceType"></el-option>-->
+      <!--              </el-select>-->
+      <!--            </el-form-item>-->
+      <!--            <el-form-item label="分组"-->
+      <!--                          v-if="page.detailsList[boxIndex]&&page.detailsList[boxIndex].sourceType == 1042102">-->
+      <!--              <el-select v-model="sourceIds" placeholder="分组" @change="onSelectGroup">-->
+      <!--                <el-option v-for="(item,index) in groupingList" :label="item.name"-->
+      <!--                           :value="item.packProdGroupId" :key="item.packProdGroupId"></el-option>-->
+      <!--              </el-select>-->
+      <!--            </el-form-item>-->
+      <!--          </el-form>-->
+      <!--          <div class="source" v-if="page.detailsList[boxIndex].sourceType == 1042101">-->
+      <!--            <div class="showgoods">-->
+      <!--              <div class="xz" @click="addGoods">+选择分组商品</div>-->
+      <!--              <div class="xz-desc">此页面最多显示前<span>50</span>个，已添加<span>0</span>个</div>-->
+      <!--              &lt;!&ndash;                            <div class="show-set">&ndash;&gt;-->
+      <!--              &lt;!&ndash;                              <div class="goods-img"><img src="../../assets/images/0.jpg" alt=""></div>&ndash;&gt;-->
+      <!--              &lt;!&ndash;                              <div class="goods-desc">入职体检套餐告诉对方公司甲方公司</div>&ndash;&gt;-->
+      <!--              &lt;!&ndash;                            </div>&ndash;&gt;-->
+
+      <!--            </div>-->
+      <!--            <div class="show-set">-->
+      <!--              <div class="goods-img"><img src="../../assets/images/0.jpg" alt=""></div>-->
+      <!--              <div class="goods-desc">入职体检套餐告诉对方公司甲方公司</div>-->
+      <!--            </div>-->
+      <!--          </div>-->
+      <!--        </div>-->
+      <!--        &lt;!&ndash;        <div class="source">&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="showgoods">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <div class="xz" @click="addGoods">+选择分组商品</div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <div class="xz-desc">此页面最多显示前<span>50</span>个，已添加<span>1</span>个</div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <div class="show-set">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="goods-img"><img src="../../assets/images/0.jpg" alt=""></div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="goods-desc">入职体检套餐告诉对方公司甲方公司</div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;        </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;        <div class="select-box" v-if="chose">&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-title">选择商品<span @click="closeAdd">×</span></div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-input&ndash;&gt;-->
+      <!--        &lt;!&ndash;              class="sel-inp"&ndash;&gt;-->
+      <!--        &lt;!&ndash;              placeholder="请输入内容"&ndash;&gt;-->
+      <!--        &lt;!&ndash;              prefix-icon="el-icon-search"&ndash;&gt;-->
+      <!--        &lt;!&ndash;              v-model="input2">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            </el-input>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-button type="primary">搜索</el-button>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-tr">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组名称</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>商品数</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组时间</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="no-source" v-if="nodata">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <i class="el-icon-s-promotion icon"></i>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <p>...暂时没有数据</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-td" v-if="havedata">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组名称</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>商品数</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组时间</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+
+      <!--        &lt;!&ndash;          &lt;!&ndash; <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <input type="checkbox" class="sel-check">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-img">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <img src="../../assets/images/0.jpg" alt="">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-desc">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <p class="desc-name">介入手术术后康复</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <span class="desc-price"><span>￥</span>1580.00</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <input type="checkbox" class="sel-check">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-img">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <img src="../../assets/images/0.jpg" alt="">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-desc">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <p class="desc-name">介入手术术后康复</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <span class="desc-price"><span>￥</span>1580.00</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <input type="checkbox" class="sel-check">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-img">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <img src="../../assets/images/0.jpg" alt="">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-desc">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <p class="desc-name">介入手术术后康复</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <span class="desc-price"><span>￥</span>1580.00</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div> &ndash;&gt;&ndash;&gt;-->
+
+      <!--        &lt;!&ndash;          <div class="sel-bottom">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-button class="cancel">取消</el-button>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-button type="primary">确认</el-button>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;        </div>&ndash;&gt;-->
+      <!--        <div style="padding: 10px;">-->
+      <!--          <el-button v-if="!componentsList[tabIndex].exist" @click="addComponent()">添加组件</el-button>-->
+      <!--          <el-button v-if="pageId != 0" type="primary" @click="onSubmit()">提交</el-button>-->
+      <!--          <el-button v-if="pageId == 0" type="primary" @click="newPage()">新建页面</el-button>-->
+      <!--        </div>-->
+      <!--      </div>-->
+      <!--      <div class="let-box" v-else>-->
+      <!--        <div v-if="componentsList[tabIndex]" class="title">{{componentsList[tabIndex].comName}}</div>-->
+      <!--        <div style="flex: 1;width: 600px;">-->
+      <!--          <el-form ref="form" :model="obj" label-width="80px">-->
+      <!--            <el-form-item label="标题名称" v-if="obj.detailsName">-->
+      <!--              <el-input v-model="obj.detailsName" style="width: 200px;"></el-input>-->
+      <!--            </el-form-item>-->
+      <!--            <el-form-item label="列表样式" v-if="obj.listStyle">-->
+      <!--              <el-select v-model="obj.listStyle" placeholder="样式">-->
+      <!--                <el-option v-for="(item,index) in typeList.listStyleList" :label="item.listStyleName"-->
+      <!--                           :value="item.listStyle" :key="item.listStyle"></el-option>-->
+      <!--              </el-select>-->
+      <!--            </el-form-item>-->
+      <!--            <el-form-item label="商品来源" v-if="obj.sourceType">-->
+      <!--              <el-select v-model="obj.sourceType" placeholder="来源">-->
+      <!--                <el-option v-for="(item,index) in typeList.goodsSourceList" :label="item.sourceName"-->
+      <!--                           :value="item.sourceType" :key="item.sourceType"></el-option>-->
+      <!--              </el-select>-->
+      <!--            </el-form-item>-->
+      <!--            <el-form-item label="分组"-->
+      <!--                          v-if="obj.sourceType == 1042102">-->
+      <!--              <el-select v-model="sourceIds" placeholder="分组" @change="onSelectGroup">-->
+      <!--                <el-option v-for="(item,index) in groupingList" :label="item.name"-->
+      <!--                           :value="item.packProdGroupId" :key="item.packProdGroupId"></el-option>-->
+      <!--              </el-select>-->
+      <!--            </el-form-item>-->
+      <!--          </el-form>-->
+      <!--          <div class="source" v-if="obj.sourceType == 1042101">-->
+      <!--            <div class="showgoods">-->
+      <!--              <div class="xz" @click="addGoods">+选择分组商品</div>-->
+      <!--              <div class="xz-desc">此页面最多显示前<span>50</span>个，已添加<span>0</span>个</div>-->
+      <!--              &lt;!&ndash;              <div class="show-set">&ndash;&gt;-->
+      <!--              &lt;!&ndash;                <div class="goods-img"><img src="../../assets/images/0.jpg" alt=""></div>&ndash;&gt;-->
+      <!--              &lt;!&ndash;                <div class="goods-desc">入职体检套餐告诉对方公司甲方公司</div>&ndash;&gt;-->
+      <!--              &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--            </div>-->
+      <!--            &lt;!&ndash;            <div class="show-set">&ndash;&gt;-->
+      <!--            &lt;!&ndash;              <div class="goods-img"><img src="../../assets/images/0.jpg" alt=""></div>&ndash;&gt;-->
+      <!--            &lt;!&ndash;              <div class="goods-desc">入职体检套餐告诉对方公司甲方公司</div>&ndash;&gt;-->
+      <!--            &lt;!&ndash;            </div>&ndash;&gt;-->
+      <!--          </div>-->
+      <!--        </div>-->
+      <!--        &lt;!&ndash;        <div class="source">&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="showgoods">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <div class="xz" @click="addGoods">+选择分组商品</div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <div class="xz-desc">此页面最多显示前<span>50</span>个，已添加<span>1</span>个</div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <div class="show-set">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="goods-img"><img src="../../assets/images/0.jpg" alt=""></div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="goods-desc">入职体检套餐告诉对方公司甲方公司</div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;        </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;        <div class="select-box" v-if="chose">&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-title">选择商品<span @click="closeAdd">×</span></div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-input&ndash;&gt;-->
+      <!--        &lt;!&ndash;              class="sel-inp"&ndash;&gt;-->
+      <!--        &lt;!&ndash;              placeholder="请输入内容"&ndash;&gt;-->
+      <!--        &lt;!&ndash;              prefix-icon="el-icon-search"&ndash;&gt;-->
+      <!--        &lt;!&ndash;              v-model="input2">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            </el-input>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-button type="primary">搜索</el-button>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-tr">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组名称</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>商品数</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组时间</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="no-source" v-if="nodata">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <i class="el-icon-s-promotion icon"></i>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <p>...暂时没有数据</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-td" v-if="havedata">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组名称</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>商品数</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <span>分组时间</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+
+      <!--        &lt;!&ndash;          &lt;!&ndash; <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <input type="checkbox" class="sel-check">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-img">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <img src="../../assets/images/0.jpg" alt="">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-desc">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <p class="desc-name">介入手术术后康复</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <span class="desc-price"><span>￥</span>1580.00</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <input type="checkbox" class="sel-check">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-img">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <img src="../../assets/images/0.jpg" alt="">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-desc">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <p class="desc-name">介入手术术后康复</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <span class="desc-price"><span>￥</span>1580.00</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          <div class="sel-sel">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <input type="checkbox" class="sel-check">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-img">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <img src="../../assets/images/0.jpg" alt="">&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              <div class="sel-desc">&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <p class="desc-name">介入手术术后康复</p>&ndash;&gt;-->
+      <!--        &lt;!&ndash;                  <span class="desc-price"><span>￥</span>1580.00</span>&ndash;&gt;-->
+      <!--        &lt;!&ndash;              </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div> &ndash;&gt;&ndash;&gt;-->
+
+      <!--        &lt;!&ndash;          <div class="sel-bottom">&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-button class="cancel">取消</el-button>&ndash;&gt;-->
+      <!--        &lt;!&ndash;            <el-button type="primary">确认</el-button>&ndash;&gt;-->
+      <!--        &lt;!&ndash;          </div>&ndash;&gt;-->
+      <!--        &lt;!&ndash;        </div>&ndash;&gt;-->
+      <!--        <div style="padding: 10px;">-->
+      <!--          <el-button v-if="!componentsList[tabIndex].exist" @click="addComponent()">添加组件</el-button>-->
+      <!--          <el-button v-if="pageId != 0&&componentsList[tabIndex].exist" type="primary" @click="onSubmit()">提交-->
+      <!--          </el-button>-->
+      <!--          <el-button v-if="pageId == 0" type="primary" @click="newPage()">新建页面</el-button>-->
+      <!--        </div>-->
+      <!--      </div>-->
+
+
+      <poster :property="componentsList[tabIndex]" :data="page.detailsList"
+              v-if="tabIndex == 0 && componentsList[tabIndex]" @onSubmit="onSubmit" @addComponent="addComponent"
+              @newPage="newPage"></poster>
+      <selectExperts :property="componentsList[tabIndex]" :data="page.detailsList"
+                     v-if="tabIndex == 1" @onSubmit="onSubmit" @addComponent="addComponent"
+                     @newPage="newPage"></selectExperts>
+      <knowledgeOfPay :property="componentsList[tabIndex]" :data="page.detailsList"
+                      v-if="tabIndex == 2" @onSubmit="onSubmit" @addComponent="addComponent"
+                      @newPage="newPage"></knowledgeOfPay>
+      <medicalService :property="componentsList[tabIndex]" :data="page.detailsList"
+                      v-if="tabIndex == 3" @onSubmit="onSubmit" @addComponent="addComponent"
+                      @newPage="newPage"></medicalService>
+      <actciles :property="componentsList[tabIndex]" :data="page.detailsList" v-if="tabIndex == 4" @onSubmit="onSubmit"
+                @addComponent="addComponent" @newPage="newPage"></actciles>
+      <counselor :property="componentsList[tabIndex]" :data="page.detailsList" v-if="tabIndex == 5" @onSubmit="onSubmit"
+                @addComponent="addComponent" @newPage="newPage"></counselor>
+      <healthAssessment :property="componentsList[tabIndex]" :data="page.detailsList" v-if="tabIndex == 6" @onSubmit="onSubmit"
+                 @addComponent="addComponent" @newPage="newPage"></healthAssessment>
+
+      <el-dialog title="选择商品" :visible.sync="chose">
+        <el-input placeholder="请输入内容" v-model="input3" class="input-with-select" size="mini" style="width: 300px;">
+          <el-button slot="append" icon="el-icon-search"></el-button>
+        </el-input>
+        <el-table :data="gridData" size="mini">
+          <el-table-column property="date" label="名称"></el-table-column>
+          <el-table-column property="name" label="商品数"></el-table-column>
+          <el-table-column property="address" label="分组时间"></el-table-column>
+        </el-table>
+      </el-dialog>
+    </div>
+  </div>
+</template>
+<script>
+    import commonHe from '../../components/commonHe'
+    import {getPackagesProductGroupDecorationList} from '@/api/api.js'
+    import medicalService from '@/views/jigouguanli/component/medicalService'
+    import actciles from '@/views/jigouguanli/component/actciles'
+    import counselor from '@/views/jigouguanli/component/counselor'
+    import healthAssessment from '@/views/jigouguanli/component/healthAssessment'
+    import poster from '@/views/jigouguanli/component/poster'
+    import knowledgeOfPay from '@/views/jigouguanli/component/knowledgeOfPay'
+    import selectExperts from '@/views/jigouguanli/component/selectExperts'
+
+    export default {
+        data() {
+            return {
+                isShowMenu : 1,
+                title: "健康商城",
+                mall: true,
+                input: '',
+                input2: '',
+                chose: false,
+                havedata: false,
+                nodata: true,
+
+                pageId: '',
+                componentsList: [],
+                tabIndex: 0,
+
+                typeList: {},
+
+                page: {
+                    pageName: '微页面标题',
+                    pageType: 1043101,
+                    detailsList: [],
+                },
+
+                boxIndex: 0,
+
+                obj: {
+                    // detailsId: '',
+                    // comId: '',
+                    // detailsName: '',
+                    // sourceType: '',
+                    // listStyle: '',
+                    // sourceIds: [],
+                    // sort: '',
+                },
+
+                sourceIds: '',
+
+                comId: '',
+
+                groupingList: [],
+
+                input3: '',
+                gridData: []
+            }
+        },
+        components: {
+            commonHe,
+            medicalService,
+            actciles,
+            counselor,
+            healthAssessment,
+            poster,
+            knowledgeOfPay,
+            selectExperts
+        },
+
+        created() {
+            this.isShowMenu = localStorage.getItem("isShowMenu");
+
+            if(this.isShowMenu == undefined || this.isShowMenu != 0){
+              this.isShowMenu = 1;
+            }
+
+            this.pageId = this.$route.query.pageId
+            this.$nextTick(() => {
+                // this.tabIndex = 0
+                // this.boxIndex = 0
+                this.getMicroComponents()
+                this.getMicroDetailSpinner()
+                // this.getDecorationList()
+                if (this.pageId != 0) {
+
+                    this.getPageShow()
+
+                }
+            })
+            // this.getMicroComponents()
+            // this.getMicroDetailSpinner()
+            //
+            // if (this.pageId != 0) {
+            //     this.getPageShow()
+            // }
+            // this.getDecorationList()
+
+        },
+
+        watch: {},
+
+        methods: {
+            upGo(fieldData, index) {
+                if (index != 0) {
+                    fieldData[index] = fieldData.splice(index - 1, 1, fieldData[index])[0];
+                } else {
+                    fieldData.push(fieldData.shift());
+                }
+            },
+
+            downGo(fieldData, index) {
+                if (index != fieldData.length - 1) {
+                    fieldData[index] = fieldData.splice(index + 1, 1, fieldData[index])[0];
+                } else {
+                    fieldData.unshift(fieldData.splice(index, 1)[0]);
+                }
+            },
+
+            addComponent(val) {
+                this.page.detailsList.push(val)
+                console.log('添加组件',this.page.detailsList)
+                this.componentsList[this.tabIndex].exist = true
+                this.boxIndex = this.page.detailsList.length - 1
+            },
+
+            newPage(val) {
+                console.log('新建',this.page.detailsList)
+                for (var i = 0; i < this.page.detailsList.length; i++) {
+                    this.page.detailsList[i].sort = i + 1
+                }
+
+                if (this.page.pageName) {
+                    this.$axios({
+                        url: 'micro/page/add',
+                        method: 'post',
+                        data: this.page
+                    }).then(res => {
+                        this.$message({
+                            message: res.data.rtnMsg,
+                            type: 'success'
+                        });
+                        this.$router.go(-1)
+                    })
+                } else {
+                    return this.$message({
+                        message: '没有标题!',
+                        type: 'error'
+                    })
+                }
+
+            },
+
+            onSubmit(val) {
+                console.log('提交1',this.page.detailsList)
+                // this.page.detailsList
+                // console.log('提交2',val)
+                // this.page.detailsList[this.boxIndex] = this.obj
+                //
+                for (var i = 0; i < this.page.detailsList.length; i++) {
+                    this.page.detailsList[i].sort = i + 1
+                }
+
+                // console.log(this.page)
+
+                if (this.page.pageName) {
+                    this.$axios({
+                        url: 'micro/page/update',
+                        method: 'post',
+                        data: this.page
+                    }).then(res => {
+                        // this.getPageShow()
+                        this.$message({
+                            message: res.data.rtnMsg,
+                            type: 'success'
+                        });
+                        this.$router.push({path: '/style',query: {nav: 'second'}})
+                    })
+                } else {
+                    return this.$message({
+                        message: '没有标题!',
+                        type: 'error'
+                    })
+                }
+
+            },
+
+            onSelectGroup(val) {
+                if (this.page.detailsList[this.boxIndex] != undefined && this.page.detailsList[this.boxIndex].sourceType == 1042102) {
+                    this.page.detailsList[this.boxIndex].sourceIds = []
+                    this.page.detailsList[this.boxIndex].sourceIds.push(val)
+                } else if (this.obj.sourceType == 1042101) {
+                    this.page.detailsList[this.boxIndex].sourceIds.push(val)
+                }
+
+
+                // this.obj.sourceIds.push(val)
+                // console.log(this.obj)
+            },
+
+            onMouseover(index) {
+                this.boxIndex = index
+                // console.log(this.page.detailsList[this.boxIndex].comUrl)
+                this.componentsList.forEach((item,index) => {
+                    if (this.page.detailsList[this.boxIndex].comUrl == item.comUrl && item.exist) {
+                        // console.log(this.tabIndex)
+                        this.tabIndex = index
+                    }
+                })
+
+                // for (let i = 0; i < this.componentsList.length; i++) {
+                //     if (this.page.detailsList[this.boxIndex].comId == this.componentsList[i].comId && this.componentsList[i].exist) {
+                //         this.tabIndex = i
+                //         console.log(i)
+                //     }
+                //      else {
+                //          this.tabIndex = 0
+                //      }
+                // }
+                // this.obj = this.page.detailsList[this.boxIndex]
+                // this.sourceIds = this.page.detailsList[this.boxIndex].sourceIds.join('')
+                //
+                // if (this.sourceIds != '') {
+                //     this.sourceIds = parseInt(this.sourceIds)
+                // }
+
+                // this.sourceIds = parseInt(this.sourceIds)
+                // console.log('index', index)
+            },
+
+            addComponentShow(index) {
+                this.tabIndex = index
+
+                if (this.page.detailsList) {
+                    for (let i = 0; i < this.page.detailsList.length; i++) {
+                        if (this.page.detailsList[i].comUrl == this.componentsList[this.tabIndex].comUrl && this.componentsList[this.tabIndex].exist) {
+                            this.boxIndex = i
+                        }
+                    }
+                }
+                // console.log(this.tabIndex)
+                // console.log(this.boxIndex)
+                // console.log('exist',this.componentsList)
+                // if (this.componentsList[this.tabIndex].exist) {
+                //     this.obj = this.page.detailsList[this.boxIndex]
+                //     this.sourceIds = this.page.detailsList[this.boxIndex].sourceIds.join('')
+                //
+                //     if (this.sourceIds != '') {
+                //         this.sourceIds = parseInt(this.sourceIds)
+                //     }
+                // } else {
+                //     this.obj = this.componentsList[this.tabIndex].componentDetails
+                //     console.log(this.componentsList[this.tabIndex].componentDetails)
+                //     console.log(this.componentsList[this.tabIndex])
+                //     console.log(this.componentsList)
+                //     this.obj.detailsId = null
+                //     this.obj.comId = this.componentsList[this.tabIndex].comId
+                    // console.log(this.obj)
+                    // this.obj = {
+                    //     detailsId: '',
+                    //     comId: '',
+                    //     detailsName: '',
+                    //     sourceType: '',
+                    //     listStyle: '',
+                    //     sourceIds: [],
+                    //     sort: '',
+                    // }
+                    // console.log('重置')
+                // }
+            },
+
+            // getDecorationList() {
+            //     getPackagesProductGroupDecorationList({
+            //         pageParam: {
+            //             pageSize: 20,
+            //             pageNum: 1,
+            //         },
+            //         packagesProductGroup: {
+            //             orgId: localStorage.getItem('orgId'),
+            //             name: ''
+            //         }
+            //     }).then(res => {
+            //         this.groupingList = res.data.packagesProductGroupList
+            //     })
+            // },
+
+            getPageShow() {
+                this.$axios({
+                    url: '/micro/page/show',
+                    method: 'post',
+                    data: {
+                        pageId: this.pageId
+                    }
+                }).then(res => {
+                    this.page = res.data.data
+                    this.page.detailsList.forEach(item => {
+                        this.componentsList.forEach(items => {
+                            if (item.comId == items.comId) {
+                                this.$set(items, 'exist', true)
+                            }
+                        })
+                    })
+                    this.sourceIds = this.page.detailsList[this.boxIndex].sourceIds
+                    this.addComponentShow(0)
+                    // console.log(this.componentsList)
+                })
+            },
+
+            getMicroComponents() {
+                this.$axios({
+                    url: 'micro/components',
+                    method: 'post',
+                    data: {}
+                }).then(res => {
+                    this.componentsList = res.data.data
+                    this.componentsList.forEach(item => {
+                        this.$set(item, 'exist', false)
+                    })
+                    this.addComponentShow(0)
+                    // console.log('组件',this.componentsList)
+                })
+            },
+
+            getMicroDetailSpinner() {
+                this.$axios({
+                    url: 'micro/detail/spinner',
+                    method: 'post',
+                    data: {}
+                }).then(res => {
+                    this.typeList = res.data.data
+                    // console.log(this.typeList)
+                })
+            },
+
+            closemall(index) {
+                this.componentsList[this.tabIndex].exist = false
+                this.page.detailsList.splice(index, 1)
+                this.boxIndex = 0
+                this.tabIndex = 0
+
+                // if (this.page.detailsList == []) {
+                //     this.obj = {
+                //         detailsId: '',
+                //         comId: '',
+                //         detailsName: '',
+                //         sourceType: '',
+                //         listStyle: '',
+                //         sourceIds: [],
+                //         sort: '',
+                //     }
+                // }
+                // console.log(this.page.detailsList)
+            },
+            openmall() {
+                this.mall = true;
+            },
+            addGoods() {
+                this.chose = true;
+            },
+            closeAdd() {
+                this.chose = false;
+            }
+        },
+        mounted() {
+            // let w=window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            // document.getElementsByClassName("paper-box")[0].style.width = (w - 200) + "px";
+            // let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            // document.getElementsByClassName("paper-box")[0].style.height = (h - 68) + "px";
+
+          // if(this.isShowMenu == 0){
+          //   document.getElementsByClassName("style-box")[0].style.left = 0;
+          //   document.getElementsByClassName("style-box")[0].style.top = 0;
+          //   document.getElementsByClassName("style-box")[0].style.marginLeft = 0;
+          //   document.getElementsByClassName("style-box")[0].style.height = "auto";
+          //   document.getElementsByClassName("style-box")[0].style.width = "100%";
+          //   document.getElementById("boxs").style.width = "100%";
+          //   document.getElementById("boxs").style.height = "auto"
+          // }
+        }
+    }
+</script>
+<style lang="scss" scoped>
+
+  .paper-box {
+    padding-bottom: 100px;
+    /*margin-left: 200px;*/
+    background-color: #fff;
+    height: 100%;
+    /*overflow: paged-y;*/
+    overflow: hidden;
+
+    .notice {
+      width: 640px;
+      height: 32px;
+      border: 1px solid #FF4F0A;
+      font-size: 12px;
+      color: #FF4F0A;
+      line-height: 32px;
+      padding-left: 10px;
+      margin-top: 20px;
+      margin-left: 20px;
+    }
+
+    .phone {
+      width: 330px;
+      height: 530px;
+      border: 1px solid #ededed;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background-color: #F5F5F5;
+      margin-top: 20px;
+      margin-left: 20px;
+      margin-right: 10px;
+      float: left;
+      box-sizing: border-box;
+
+      .top {
+        width: 330px;
+        height: 55px;
+        background-image: url(../../assets/images/bar.png);
+        background-size: 325px 55px;
+        padding-right: 5px;
+        text-align: center;
+        line-height: 83px;
+        font-size: 13px;
+      }
+
+      .mall-box:hover {
+        .close {
+          display: block;
+        }
+
+        .move {
+          display: block;
+        }
+
+        /*.edit {*/
+        /*  display: block;*/
+        /*}*/
+      }
+
+      .mall-box {
+        width: 100%;
+        background-color: #fff;
+        /*margin-bottom: 12px;*/
+        overflow: hidden;
+        position: relative;
+        box-sizing: border-box;
+        border: 1px solid transparent;
+
+        &.pit {
+          border: 1px dashed red;
+          /*background: rgba(58,142,230,0.4);*/
+        }
+
+        &.pit:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          background: rgba(58, 142, 230, 0.1);
+        }
+
+        .move {
+          position: absolute;
+          top: 5px;
+          font-size: 12px;
+          color: #3a8ee6;
+          cursor: pointer;
+          display: none;
+        }
+
+        .close {
+          width: 25px;
+          height: 25px;
+          background: rgb(228, 227, 227);
+          font-size: 25px;
+          line-height: 21px;
+          text-align: center;
+          border-radius: 50%;
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          cursor: pointer;
+          display: none;
+          // color:#fff;
+        }
+        .edit {
+          position: absolute;
+          top: 50%;
+          right: 50%;
+          color: #3a8ee6;
+          transform: translate(50%,-50%);
+          display: none;
+        }
+        .bt {
+          width: 100%;
+          height: 36px;
+          margin-top: 30px;
+          margin-left: 20px;
+          margin-bottom: 10px;
+
+          .bt-l {
+            width: 144px;
+            height: 36px;
+            font-size: 18px;
+            font-family: PingFangSC-Semibold;
+            font-weight: 600;
+            color: rgba(4, 11, 28, 1);
+            line-height: 36px;
+            float: left;
+          }
+
+          .bt-r {
+            width: 52px;
+            height: 36px;
+            font-size: 13px;
+            font-family: PingFangSC-Regular;
+            font-weight: 400;
+            color: rgb(128, 128, 131);
+            line-height: 36px;
+            float: right;
+            margin-right: 20px;
+          }
+        }
+
+        .sets {
+          .set {
+            float: left;
+            width: 133px;
+            height: 175px;
+            margin-left: 20px;
+            // background-color: pink;
+            .img {
+              width: 133px;
+              height: 107px;
+              overflow: hidden;
+              border-radius: 5px;
+
+              img {
+                width: 133px;
+                height: 107px;
+              }
+            }
+
+            .desc {
+              font-weight: 600;
+              font-family: PingFangSC-Medium;
+              font-size: 14px;
+              color: rgba(4, 11, 28, 1);
+              line-height: 19px;
+              margin-top: 10px;
+              overflow: hidden;
+              text-overflow: ellipsis; //文本溢出显示省略号
+              white-space: nowrap;
+
+            }
+
+            .price {
+              .price-now {
+                color: #FF0000;
+                font-size: 16px;
+                margin-top: 6px;
+                display: block;
+                float: left;
+              }
+
+              .price-pass {
+                color: rgb(125, 126, 128);
+                font-size: 13px;
+                margin-top: 9px;
+                display: block;
+                float: left;
+                // line-height: 23px;
+                margin-left: 5px;
+                text-decoration: line-through;
+              }
+            }
+          }
+        }
+      }
+
+      .add {
+        width: 100%;
+        height: 266px;
+        background-color: #fff;
+        text-align: center;
+        overflow: hidden;
+
+        p {
+          font-weight: bold;
+          font-size: 14px;
+        }
+
+        .options {
+          margin-left: 8px;
+
+          div {
+            display: block;
+            width: 88px;
+            height: 34px;
+            font-size: 14px;
+            background: rgba(0, 118, 255, .1);
+            color: rgba(4, 11, 28, 1);
+            float: left;
+            margin-top: 10px;
+            line-height: 34px;
+            text-align: center;
+            margin-left: 10px;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: .3s;
+
+            &.pit {
+              border: 1px dashed red;
+              border-radius: 10px;
+              /*box-shadow: 0 2px 12px #f3f5f7;*/
+            }
+
+            &.exist {
+              background: #3a8ee6;
+              color: #ffffff;
+            }
+          }
+
+        }
+
+
+      }
+    }
+
+    .phone::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+      background-color: #f5f5f5;
+    }
+
+    .phone::-webkit-scrollbar-thumb {
+      height: 20px;
+      border-radius: 10px;
+      -webkit-box-shadow: inset 0 0 6px rgba(90, 88, 88, 0.3);
+      background-color: rgb(192, 189, 189);
+    }
+
+    .let-box {
+      display: flex;
+      flex-direction: column;
+      padding: 0 0 0 50px;
+      width: 700px;
+      height: 530px;
+      background: rgba(245, 245, 245, 1);;
+      border: 1px solid #ededed;
+      float: left;
+      margin-top: 20px;
+      margin-left: 10px;
+      box-sizing: border-box;
+      overflow-y: auto;
+
+      .title {
+        margin-bottom: 10px;
+        color: #040B1C;
+        font-weight: bold;
+        font-size: 16px;
+        width: 600px;
+        height: 60px;
+        /*margin:auto;*/
+        line-height: 60px;
+        border-bottom: 1px solid rgba(230, 230, 230, 1);
+
+      }
+
+      .name {
+        /*margin-left:50px;*/
+        margin-top: 25px;
+
+        .mc {
+          display: block;
+          float: left;
+        }
+
+        .btmc {
+          width: 200px;
+          margin-left: 40px;
+          margin-top: -9px;
+        }
+      }
+
+      .source {
+        /*margin-left:50px;*/
+        margin-top: 20px;
+
+        .checkbox {
+          margin-left: 35px;
+        }
+
+        .showgoods {
+          display: flex;
+          align-items: center;
+          padding: 5px 10px;
+          width: 600px;
+          background-color: #fff;
+          box-sizing: border-box;
+
+          .xz {
+            width: 120px;
+            height: 30px;
+            /*float: left;*/
+            border: dashed 1px #0076FF;
+            color: #0076FF;
+            line-height: 30px;
+            text-align: center;
+            font-size: 15px;
+            cursor: pointer;
+          }
+
+          .xz-desc {
+            margin-left: 10px;
+            color: rgb(124, 123, 123);
+            /*float: left;*/
+          }
+
+          // margin-left:20px;
+        }
+
+        .show-set {
+          color: #040B1C;
+          font-size: 14px;
+          width: 600px;
+          height: 70px;
+          background-color: #fff;
+          overflow: hidden;
+
+          .goods-img {
+            width: 50px;
+            height: 50px;
+            margin-top: 10px;
+            margin-left: 10px;
+            float: left;
+
+            img {
+              width: 50px;
+              height: 50px;
+            }
+          }
+
+          .goods-desc {
+            float: left;
+            line-height: 70px;
+            margin-left: 20px;
+          }
+
+
+        }
+
+      }
+
+      .select-box {
+        width: 600px;
+        border: 1px solid #ededed;
+        background-color: #fff;
+        margin-left: 50px;
+        margin-top: 30px;
+
+        .sel-title {
+          width: 590px;
+          height: 40px;
+          line-height: 40px;
+          padding-left: 10px;
+          border-bottom: 1px solid #ededed;
+
+          span {
+            float: right;
+            margin-right: 15px;
+            font-size: 25px;
+            cursor: pointer;
+          }
+        }
+
+        .sel-inp {
+          width: 300px;
+          margin-top: 10px;
+          margin-left: 10px;
+        }
+
+        .sel-sel {
+          width: 100%;
+          height: 60px;
+          margin-top: 10px;
+
+          .sel-check {
+            float: left;
+            margin-top: 15px;
+            margin-left: 10px;
+          }
+
+          .sel-img {
+            width: 40px;
+            height: 40px;
+            overflow: hidden;
+            float: left;
+            margin-left: 10px;
+
+            img {
+              width: 40px;
+              height: 40px;
+            }
+          }
+
+          .sel-desc {
+            height: 60px;
+            float: left;
+            margin-left: 10px;
+            overflow: hidden;
+
+            .desc-name {
+              height: 20px;
+              font-size: 13px;
+              line-height: 20px;
+              margin-top: 0px;
+            }
+
+            .desc-price {
+              display: block;
+              height: 20px;
+              font-size: 13px;
+              line-height: 20px;
+              margin-top: -13px;
+              color: #FF0000;
+            }
+
+          }
+
+        }
+
+        .sel-tr {
+          width: 100%;
+          height: 30px;
+          border: 1px solid #ededed;
+
+          span {
+            display: block;
+            width: 33.3%;
+            float: left;
+            text-align: center;
+            line-height: 30px;
+          }
+        }
+
+        .no-source {
+          width: 100%;
+          height: 300px;
+          position: relative;
+          overflow: hidden;
+
+          .icon {
+            // display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            text-align: center;
+            font-size: 30px;
+            line-height: 240px;
+          }
+
+          p {
+            width: 100%;
+            text-align: center;
+            margin-top: 160px;
+          }
+        }
+
+        .sel-td {
+          width: 100%;
+          height: 30px;
+          border-bottom: 1px solid #ededed;
+          margin-bottom: 50px;
+
+          span {
+            display: block;
+            width: 33.3%;
+            float: left;
+            text-align: center;
+            line-height: 30px;
+          }
+        }
+
+        .sel-bottom {
+          border-top: 1px solid #ededed;
+          padding-top: 10px;
+          padding-bottom: 10px;
+
+          .cancel {
+            margin-left: 220px;
+
+          }
+
+        }
+      }
+
+    }
+
+    .let-box::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+      background-color: #f5f5f5;
+    }
+
+    .let-box::-webkit-scrollbar-thumb {
+      height: 20px;
+      border-radius: 10px;
+      -webkit-box-shadow: inset 0 0 6px rgba(90, 88, 88, 0.3);
+      background-color: rgb(192, 189, 189);
+    }
+  }
+</style>
+
+

@@ -1,0 +1,282 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="box">
+      <div class="wrapper">
+        <el-tabs v-model="activeName">
+          <el-tab-pane label="数据概况" name="first">
+            <div class="header">
+              <div class="title">医院业务统计</div>
+              <div style="display: flex;">
+                <div style="margin-right: 20px">
+                  <el-radio-group v-model="radio1" @change="getNewData" size="small">
+                    <el-radio-button label="0">全部</el-radio-button>
+                    <el-radio-button label="1">今日</el-radio-button>
+                    <el-radio-button label="2">本周</el-radio-button>
+                    <el-radio-button label="3">本月</el-radio-button>
+                    <el-radio-button label="4">全年</el-radio-button>
+                  </el-radio-group>
+                </div>
+                <div>
+                  <el-date-picker
+                    @change="selectTime"
+                    v-model="value2"
+                    type="daterange"
+                    align="right"
+                    unlink-panels
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    value-format="yyyy-MM-dd"
+                    size="small"
+                  >
+                  </el-date-picker>
+                </div>
+              </div>
+            </div>
+            <div class="content">
+              <div class="tab">
+                <div class="left"><</div>
+                <ul>
+                  <li>
+                    <p>在线问诊量</p>
+                    <span class="text-total">总销量</span>
+                    <span class="text-num">{{data.onlineInquiryAmount}}</span>
+                  </li>
+                  <li class="pit">
+                    <p>特色服务包销量</p>
+                    <span class="text-total">总销量</span>
+                    <span class="text-num">{{data.specialServiceAmount}}</span>
+                  </li>
+                  <li>
+                    <p>医疗服务包销量</p>
+                    <span class="text-total">总销量</span>
+                    <span class="text-num">{{data.medicalServiceAmount}}</span>
+                  </li>
+                  <li>
+                    <p>健康产品销量</p>
+                    <span class="text-total">总销量</span>
+                    <span class="text-num">{{data.healthProductAmount}}</span>
+                  </li>
+                  <li>
+                    <p>上门服务销量</p>
+                    <span class="text-total">总销量</span>
+                    <span class="text-num">{{data.homeServiceAmount}}</span>
+                  </li>
+                </ul>
+                <div class="right"> > </div>
+              </div>
+              <lines :nameIndex="tabIndex" :lineData="lineData"></lines>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </div>
+  </div>
+
+</template>
+
+<script>
+
+    import commonHe from '../../components/commonHe'
+    import lines from './viewTable/line'
+    import {hospitalServiceStatistics,hospitalSpecialPackageList} from '@/api/api.js'
+
+    export default {
+        name: "profileData",
+        data() {
+            return {
+                activeName: 'first',
+                value2: [],
+                radio1: '0',
+                tabIndex: 1,
+
+                end: '',
+                startdate: '',
+                data: {},
+
+                lineData: [],
+            }
+        },
+
+        created() {
+            this.gethospitalServiceStatistics()
+            this.gethospitalSpecialPackageList()
+        },
+        methods: {
+
+            gethospitalServiceStatistics() {
+                hospitalServiceStatistics({
+                    govId: '1155659134264188928',
+                    orgId: localStorage.getItem('orgId'),
+                    timeType: this.radio1,
+                    startTime: this.value2[0],
+                    endTime: this.value2[1],
+                }).then(res => {
+                    console.log(res)
+                    this.data = res.data.serviceItemData
+                })
+            },
+
+            gethospitalSpecialPackageList() {
+                this.initDate()
+                hospitalSpecialPackageList({
+                    govId: '1155659134264188928',
+                    startTime: this.startdate,
+                    endTime: this.end,
+                }).then(res => {
+                    console.log(res)
+                    this.lineData = res.data.specialPackageList
+                })
+            },
+
+            initDate() {
+                var date = new Date();
+                //年
+                var year = date.getFullYear();
+                //月
+                var month = date.getMonth() + 1;
+
+                //日
+                var day = date.getDate();
+
+                var end = year + "-" + (month < 10 ? '0' + month : month) + "-" + (day < 10 ? '0' + day : day);
+
+                this.end = end
+
+                var lw = new Date(date - 1000 * 60 * 60 * 24 * 30);//最后一个数字30可改，30天的意思
+                var lastY = lw.getFullYear();
+                var lastM = lw.getMonth() + 1;
+                var lastD = lw.getDate();
+                var startdate = lastY + "-" + (lastM < 10 ? "0" + lastM : lastM) + "-" + (lastD < 10 ? "0" + lastD : lastD);//三十天之前日期
+
+                this.startdate = startdate
+
+            },
+
+            getNewData(val) {
+                this.radio1 = val
+                this.value2 = []
+                this.gethospitalServiceStatistics()
+            },
+
+            selectTime(val) {
+                this.value2 = val
+                this.radio1 = 5
+            },
+
+
+
+        },
+        components: {
+            commonHe,
+            lines
+        }
+    }
+</script>
+
+<style scoped>
+
+  p,ul {
+    margin: 0;
+    padding: 0;
+  }
+
+  ul,li {
+    list-style: none;
+  }
+
+  .box {
+    position: absolute;
+    top: 68px;
+    left: 200px;
+    right: 0;
+    bottom: 0;
+    padding: 15px;
+    background: whitesmoke;
+    overflow-y: auto;
+  }
+
+  .wrapper {
+    padding: 5px 20px 20px;
+    background: #fff;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  .content {
+    margin-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+
+  .header .title {
+    text-indent: 0.5em;
+    border-left: 6px solid #409EFF;
+  }
+
+  .tab {
+    display: flex;
+    padding-bottom: 40px;
+  }
+
+  .tab > div{
+    width: 30px;
+    font-size: 22px;
+    text-align: center;
+    height: 130px;
+    border: 1px solid #ccc;
+    line-height: 130px;
+    box-sizing: border-box;
+  }
+
+  .tab ul {
+    flex: 1;
+    display: flex;
+  }
+
+  .tab ul li {
+    flex: 0 0 20%;
+    height: 130px;
+    text-align: center;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    cursor: pointer;
+  }
+
+  .tab ul .pit {
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-top: 4px solid deepskyblue;
+  }
+
+  .tab ul li p {
+    font-size: 16px;
+    color: #212121;
+    line-height: 37px;
+  }
+
+  .tab ul li span {
+    display: block;
+  }
+
+  .tab ul li .text-total {
+    font-size: 12px;
+    color: #303133;
+    line-height: 37px;
+  }
+
+  .tab ul li .text-num {
+    font-size: 28px;
+    color: #4d4d4d;
+    line-height: 37px;
+  }
+
+</style>

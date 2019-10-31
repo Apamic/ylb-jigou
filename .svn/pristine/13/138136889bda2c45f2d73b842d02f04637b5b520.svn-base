@@ -1,0 +1,394 @@
+<template>
+  <div class="head-box hxmggtou">
+    <div class="left">
+      <div class="left-top">
+        <div class="img">
+          <img :src="logo" alt="">
+        </div>
+        <div class="universe"><strong>{{orgName}}</strong></div>
+      </div>
+      <div class="left-body">
+        <div class="gl">医院管理</div>
+        <ul class="gl-ul">
+          <li @click="style">界面风格</li>
+          <li @click="yysz">医院设置</li>
+          <li @click="deploy">科室配置</li>
+          <li @click="staff">员工管理</li>
+          <li @click="yygl">应用管理</li>
+        </ul>
+        <div class="gl jksc" @click="jksc">健康商城</div>
+        <ul class="gl-ul">
+          <!-- <li>实物商品</li> -->
+          <li @click="knowledgePay">知识付费</li>
+          <li @click="jksc">医疗服务</li>
+          <!-- <li @click="servicegoods">服务包商品</li> -->
+          <!-- <li>健康护理</li> -->
+        </ul>
+        <div class="gl jygl" @click="jygl">交易管理</div>
+        <ul class="gl-ul">
+          <li @click="jygl">订单中心</li>
+          <li @click="cwzx">财务中心</li>
+        </ul>
+        <!--<div class="gl hzgl">患者管理</div>-->
+        <!--<ul class="gl-ul" >-->
+            <!--<li @click="patientBank">患者库</li>-->
+            <!--<li @click="patientallocation">患者分配</li>-->
+        <!--</ul>-->
+        <div class="gl yyzmt">医院自媒体</div>
+        <ul class="gl-ul">
+          <li @click="nrgl">内容管理</li>
+          <li @click="nrsh">内容审核</li>
+          <!--<li @click="qfgl">群发管理</li>-->
+        </ul>
+        <div class="gl yxzx" @click="yxzx">营销中心</div>
+        <!-- <div class="gl sjtj">数据统计</div>
+        <ul class="gl-ul" >
+            <li>数据概况</li>
+            <li>业绩统计</li>
+        </ul>
+        <div class="gl wdfw">我的服务</div> -->
+      </div>
+    </div>
+    <div class="right">
+      <div class="right-top">
+        <!-- <el-breadcrumb class="location" separator-class="el-icon-arrow-right">
+          <el-breadcrumb-item :to="{ path: 'marketing' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item>活动管理</el-breadcrumb-item>
+          <el-breadcrumb-item>活动列表</el-breadcrumb-item>
+          <el-breadcrumb-item>活动详情</el-breadcrumb-item>
+        </el-breadcrumb> -->
+        <span class="tc" @click="checkout">退出登录</span>
+        <span class="cz">操作指南</span>
+        <span class="fw">访问医院</span>
+      </div>
+    </div>
+  </div>
+</template>
+<style lang="scss" scoped>
+  $left-width: 200px;
+  .head-box {
+    width: 100%;
+
+    .left {
+      float: left;
+      width: 200px;
+      height: 500px;
+      overflow-y: auto;
+      background-color: #333B4C;
+      color: #fff;
+      li {
+        list-style: none;
+      }
+
+      .left-top {
+        width: 200px;
+        height: 120px;
+        overflow: hidden;
+
+        .img {
+          width: 48px;
+          height: 48px;
+          background-color: pink;
+          margin: 23px auto;
+          border-radius: 50%;
+          overflow: hidden;
+
+          img {
+            width: 48px;
+            height: 48px;
+          }
+        }
+
+        .universe {
+          text-align: center;
+          margin-top: -10px;
+          font-size:14px;
+          font-family:MicrosoftYaHei;
+          font-weight:bold;
+          
+
+        }
+
+      }
+
+      .left-body {
+        .gl {
+          width: 156px;
+          height: 52px;
+          color: #fff;
+          padding-left: 44px;
+          font-size: 16px;
+          line-height: 52px;
+          background-image: url(../assets/images/guanli.png);
+          background-repeat: no-repeat;
+          background-size: 24px 24px;
+          background-position: 14px 14px;
+          cursor: pointer;
+          overflow: hidden;
+          margin: 0px 0 -7px 0;
+        }
+
+        .gl:hover {
+          background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .gl-ul {
+          margin: 0;
+          font-size: 14px;
+
+          li {
+            cursor: pointer;
+            float: left;
+            font-weight: 400;
+            line-height: 17px;
+            margin: 10px 12px 5px 3px;
+          }
+        }
+
+        .jksc {
+          margin-top: 5px;
+          background-image: url(../assets/images/3-shangcheng.png);
+          background-repeat: no-repeat;
+        }
+
+        .jygl {
+          background-image: url(../assets/images/jygl.png);
+          background-repeat: no-repeat;
+        }
+
+        .hzgl {
+          background-image: url(../assets/images/hzgl.png);
+          background-repeat: no-repeat;
+        }
+
+        .hzfw {
+          background-image: url(../assets/images/hzfw.png);
+          background-repeat: no-repeat;
+        }
+
+        .yyzmt {
+          background-image: url(../assets/images/yyzmt.png);
+          background-repeat: no-repeat;
+        }
+
+        .yxzx {
+          background-image: url(../assets/images/8-seal.png);
+          background-repeat: no-repeat;
+        }
+
+        .sjtj {
+          background-image: url(../assets/images/sjtj.png);
+          background-repeat: no-repeat;
+        }
+
+        .wdfw {
+          background-image: url(../assets/images/wdfw.png);
+          background-repeat: no-repeat;
+        }
+      }
+    }
+
+    .left::-webkit-scrollbar {
+      display: none;
+    }
+
+    .right {
+      width: calc(100% - #{$left-width});
+      // height: 1500px;
+      background-color: pink;
+      overflow: hidden;
+
+      .right-top {
+        width: 100%;
+        background-color: #0076FF;
+        height: 68px;
+        color: #fff;
+
+        .location {
+          float: left;
+          padding-left: 50px;
+        }
+
+        span {
+          font-weight: bold;
+          font-size: 12px;
+          line-height: 68px;
+        }
+
+        .tc {
+          float: right;
+          padding-right: 40px;
+          padding-left: 23px;
+          cursor: pointer;
+        }
+
+        .cz {
+          float: right;
+          padding-left: 46px;
+          background-image: url(../assets/images/cz.png);
+          background-repeat: no-repeat;
+          background-size: 16px 16px;
+          background-position: 27px 26px;
+        }
+
+        .fw {
+          float: right;
+          padding-left: 46px;
+          background-image: url(../assets/images/fw.png);
+          background-repeat: no-repeat;
+          background-size: 16px 16px;
+          background-position: 27px 26px;
+        }
+      }
+    }
+  }
+
+</style>
+<style>
+  html {
+    overflow-y: hidden
+  }
+</style>
+
+<script>
+    import {logout} from '../api/api'
+
+    export default {
+        data() {
+            return {
+                token: "",
+                logo: '',
+                orgName: ''
+            }
+        },
+        methods: {
+            // 健康商城：
+            knowledgePay() {
+              this.$router.push("/knowledgePay")
+            },
+            jksc() {
+                this.$router.push("/mall")
+            },
+            yygl() {
+
+            },
+            // 营销中心：
+            yxzx() {
+                this.$router.push("/marketing")
+            },
+            // 订单中心：
+            jygl() {
+                this.$router.push("/orders")
+            },
+            // 财务中心：
+            cwzx() {
+                this.$router.push("/finance")
+            },
+            // 科室配置：
+            deploy() {
+                this.$router.push("/deploy")
+            },
+            // 员工管理：
+            staff() {
+                this.$router.push("/staff")
+            },
+            // 医院设置：
+            yysz() {
+                this.$router.push("/yysz")
+            },
+            // 应用管理：
+            yygl() {
+                this.$router.push("/yygl")
+            },
+            // 患者库：
+            patientBank() {
+                this.$router.push("/patientBank")
+            },
+            // 患者分配：
+            patientallocation() {
+                this.$router.push("/patientallocation")
+            },
+            //多媒体
+            nrgl() {
+                this.$router.push("/nrgl")
+            },
+            nrsh() {
+                this.$router.push("/nrsh")
+            },
+            qfgl() {
+                this.$router.push("/qfgl")
+            },
+            // 服务包商品：
+            servicegoods() {
+                // alert("111111")
+                this.$router.push("/servicegoods")
+            },
+            // 界面风格：
+            style() {
+                this.$router.push("/style")
+            },
+            // 退出登陆：
+            checkout() {
+                this.$confirm('是否确认退出登陆?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    var logoutList = {
+                        "token": this.token
+                    }
+                    logout(logoutList).then(data => {
+                        // console.log(data)
+                        if (data.rtnCode == 1) {
+                            this.$message({
+                                type: 'success',
+                                message: '退出登陆成功!',
+                            });
+                        } else {
+                            this.$message({
+                                type: 'success',
+                                message: '退出登陆失败!',
+                            });
+
+                        }
+                        this.$router.push("/login")
+                    })
+                    //   alert("11111")
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消退出登陆！'
+                    });
+                });
+            }
+        },
+        mounted() {
+            this.token = localStorage.getItem("token")
+            this.orgName = localStorage.getItem("orgName")
+            this.logo = localStorage.getItem("logo")
+            // alert( this.token)
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("left")[0].style.height = (h + 68) + "px";
+        }
+    }
+</script>
+<style>
+  /* 全局修改当前位置字体颜色大小： */
+  /* .el-breadcrumb__inner{
+      color:#fff;
+      font-size:14px;
+  }
+  .el-breadcrumb__inner.is-link{
+      color:#fff;
+      font-size:14px;
+  }
+  .el-breadcrumb__item:last-child .el-breadcrumb__inner{
+      color:#fff;
+      font-size:14px;
+  } */
+
+</style>
+
+
+
+

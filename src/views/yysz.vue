@@ -1,0 +1,670 @@
+<template>
+  <div>
+    <commonHe v-if="isShowMenu == 1"></commonHe>
+    <div class="style-box">
+      <div id="box">
+        <div class="yysz-ys">
+          <div class="bfb-bjb m-b-20">
+            <div style="display:none;">
+              <router-link to="/xiaoguoceshi">弹框测试效果</router-link>
+            </div>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+              <el-tab-pane label="基本信息" name="first">
+                <div class="biaodan jbxxform">
+                  <el-form ref="form" :model="form" label-width="100px">
+                    <el-form-item label="推广地址">
+                      <div class="biaodan-hy">
+                        <img width = "100px" height="100px" :src="orgCodeContent" alt="">
+                      </div>
+                      <div class="shezhi-gdy">
+                        <el-button type="text" @click="moreSizeFormVisible = true">更多尺寸</el-button>
+                        <div class="jgsztck">
+                          <el-dialog title="更多尺寸" :visible.sync="moreSizeFormVisible">
+                            <table class="org_code_table" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td>二维码边长(cm)</td>
+                                <td>下载链接</td>
+                              </tr>
+                              <tr>
+                                <td>30cm</td>
+                                <td><a :href="downOrgCode(30)" style="color:#409EFF;">下载</a></td>
+                              </tr>
+                              <tr>
+                                <td>50cm</td>
+                                <td><a :href="downOrgCode(50)" style="color:#409EFF;">下载</a></td>
+                              </tr>
+                              <tr>
+                                <td>100cm</td>
+                                <td><a :href="downOrgCode(100)" style="color:#409EFF;">下载</a></td>
+                              </tr>
+                            </table>
+                          </el-dialog>
+                        </div>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="机构简称">
+                      <div class="biaodan-hy">
+                        <div class="biaodan-hynr">
+                          <el-input v-model="orgNames"></el-input>
+                        </div>
+                        <div class="shezhi-gdy">
+                          <el-button type="text" @click="dialogFormVisible = true">设置</el-button>
+                          <div class="jgsztck">
+                            <el-dialog title="机构简称" :visible.sync="dialogFormVisible">
+                              <el-form :model="form">
+                                <el-form-item label="机构简称">
+                                  <el-input v-model="orgNames" autocomplete="off"></el-input>
+                                </el-form-item>
+                              </el-form>
+                              <div slot="footer" class="dialog-footer">
+                                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+                              </div>
+                            </el-dialog>
+                          </div>
+                        </div>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="机构LOGO">
+                      <div class="biaodan-hy">
+                        <div class="biaodan-hynr"><img :src="logoUrl" alt=""></div>
+                        <div class="shezhi-gdy">
+                          <el-button type="text" @click="dialogFormVisible1 = true">设置</el-button>
+                          <div class="jgsztck">
+                            <el-dialog title="机构LOGO设置" :visible.sync="dialogFormVisible1">
+                              <el-form :model="form">
+                                <el-form-item label="上传LOGO">
+                                  <el-upload
+                                    :action="addUrl"
+                                    list-type="picture-card"
+                                    :limit="1"
+                                    :on-success="handlePictureCardSuccess"
+                                    :on-remove="handleRemove"
+                                  >
+                                    <i class="el-icon-plus"></i>
+                                    <P>只能上传jpg,PNG,bmp,gif格式，大小不超过2M</P>
+                                  </el-upload>
+                                  <el-dialog :visible.sync="dialogVisible">
+                                    <img width="100%" :src="dialogImageUrl" alt="">
+                                  </el-dialog>
+                                </el-form-item>
+                              </el-form>
+                              <div slot="footer" class="dialog-footer">
+                                <el-button @click="dialogFormVisible1 = false">取 消</el-button>
+                                <el-button type="primary" @click="dialogFormVisible1 = false">确 定</el-button>
+                              </div>
+                            </el-dialog>
+                          </div>
+                        </div>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="所属类型">
+                      <div class="biaodan-hy">
+                        <div class="neirongzs">{{orgGradeName}}</div>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="机构简介">
+                      <div class="biaodan-hy">
+                        <el-input type="textarea" v-model="form.desc"></el-input>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="机构特色标签">
+                      <div class="biaodan-hy">
+                        <el-tag :key="tag" v-for="tag in dynamicTags" closable
+                                :disable-transitions="false"
+                                @close="handleClose(tag)">
+                          {{tag}}
+                        </el-tag>
+                        <el-input
+                          class="input-new-tag"
+                          v-if="inputVisible"
+                          v-model="inputValue"
+                          ref="saveTagInput"
+                          size="small"
+                          @keyup.enter.native="handleInputConfirm"
+                          @blur="handleInputConfirm"
+                        >
+                        </el-input>
+                        <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加新标签</el-button>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="关注设置">
+                      <div class="biaodan-hy guanzhusz">
+                        <div class="biaodan-hynr">
+                          <el-input v-model="form.name2" placeholder="设置引导关注的公众号、二维码等"></el-input>
+                          <!--                          <img :src="dialogImageUrl" alt="">-->
+                        </div>
+                        <div class="shezhi-gdy">
+                          <el-button type="text" @click="dialogFormVisible3 = true">设置</el-button>
+                          <div class="jgsztck">
+                            <el-dialog title="关注设置" :visible.sync="dialogFormVisible3">
+                              <el-form :model="form">
+                                <el-form-item label="公众号名称">
+                                  <el-input v-model="form.otherAppName" autocomplete="off"></el-input>
+                                </el-form-item>
+                                <!--                                <el-form-item label="上传二维码">-->
+                                <!--                                  <el-upload-->
+                                <!--                                    :action="addUrl"-->
+                                <!--                                    list-type="picture-card"-->
+                                <!--                                    :limit="1"-->
+                                <!--                                    :on-success="handlePictureCardSuccess3"-->
+                                <!--                                    :on-remove="handleRemove"-->
+                                <!--                                  >-->
+                                <!--                                    <i class="el-icon-plus"></i>-->
+                                <!--                                    <P>只能上传jpg,PNG,bmp,gif格式，大小不超过2M</P>-->
+                                <!--                                  </el-upload>-->
+                                <!--                                  <el-dialog :visible.sync="dialogVisible">-->
+                                <!--                                    <img width="100%" :src="dialogImageUrl" alt="">-->
+                                <!--                                  </el-dialog>-->
+                                <!--                                </el-form-item>-->
+                                <el-form-item label="AppID">
+                                  <el-input v-model="form.otherAppId" autocomplete="off"></el-input>
+                                </el-form-item>
+                                <el-form-item label="AppSecret">
+                                  <el-input v-model="form.otherAppSecret" autocomplete="off"></el-input>
+                                </el-form-item>
+                              </el-form>
+                              <div slot="footer" class="dialog-footer">
+                                <el-button @click="dialogFormVisible3 = false">取 消</el-button>
+                                <el-button type="primary" @click="dialogFormVisible3 = false">确 定</el-button>
+                              </div>
+                            </el-dialog>
+                          </div>
+                        </div>
+                      </div>
+                    </el-form-item>
+                    <el-form-item>
+                      <el-button type="primary" @click="onSubmit">立即保存</el-button>
+                    </el-form-item>
+                  </el-form>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="联系我们" name="second">
+                <div class="biaodan quxing lxwmbiao">
+                  <el-form label-width="100px" :model="formName">
+                    <el-form-item label="联系人">
+                      <el-input v-model="formName.name"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <el-form :model="numberValidateForm" ref="numberValidateForm" label-width="100px"
+                           class="demo-ruleForm">
+                    <el-form-item label="手机号">
+                      <el-input v-model="numberValidateForm.age" autocomplete="off"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <el-form :model="numberValidateForm2" ref="numberValidateForm2" label-width="100px"
+                           class="demo-ruleForm">
+                    <el-form-item label="座机" >
+                      <el-input v-model="numberValidateForm2.age" autocomplete="off"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <el-form :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="100px"
+                           class="demo-dynamic">
+                    <el-form-item
+                      prop="email"
+                      label="邮箱"
+                      :rules="[
+                              { message: '请输入邮箱地址', trigger: 'blur' },
+                              { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
+                              ]"
+                    >
+                      <el-input v-model="dynamicValidateForm.email"></el-input>
+                    </el-form-item>
+
+                    <el-form-item class="dizhi" label="机构地址">
+                      <el-input class="address" v-model="address"></el-input>
+                      <!-- <div class="dizhixk">
+                          <el-cascader
+                            size="large"
+                            :options="options"
+                            v-model="selectedOptions"
+                            @change="handleChange">
+                          </el-cascader>
+                        </div>
+                        <div class="dizhi-ss">
+                          <el-input v-model="form.name" placeholder="亚贸"></el-input>
+                          <el-button>搜索地图</el-button>
+                        </div> -->
+                    </el-form-item>
+
+                    <!-- <el-form-item label="地理位置标注"><div class="boxcontent" id="map"><iframe style="margin:0px; width:100%; height:300px;"  src="https://map.baidu.com/search/cfd%E8%B4%A2%E5%AF%8C%E6%97%B6%E4%BB%A3%E4%B8%AD%E5%BF%83%E5%9C%B0%E5%9B%BE/@12725273.29,3558757.28,12z?querytype=inf&uid=bc761c8c79794577eaf8536d&wd=CFD%E8%B4%A2%E5%AF%8C%E6%97%B6%E4%BB%A3%E4%B8%AD%E5%BF%83%E5%9C%B0%E5%9B%BE&all=1&c=218&provider=pc-aladin&da_src=shareurl" frameborder="0" scrolling="no"></iframe></div>
+
+                    </el-form-item> -->
+                  </el-form>
+
+                </div>
+                <div style="margin-top: 40px;">
+                  <el-button style="margin-left: 100px" type="primary" @click="sure">立即保存</el-button>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+    import commonHe from '../components/commonHe'
+    import {hospitalSettings} from "../api/api"
+    import {updateImages} from '../api/api'
+    import {infoSure} from '../api/api'
+
+    import {addUrl} from '../api/api'
+    import {orgCode} from '../api/api'
+    import {microUrl} from '../api/api'
+
+    //引入区域选项组件
+    import {
+        provinceAndCityData,
+        regionData,
+        provinceAndCityDataPlus,
+        regionDataPlus,
+        CodeToText,
+        TextToCode
+    } from 'element-china-area-data'
+
+    export default {
+        data() {
+            return {
+                orgId:'',
+                // 图片上传地址：
+                addUrl: addUrl,
+                microUrl : microUrl,
+                //区域联动选项
+                options: regionData,
+                selectedOptions: [],
+                //以上是区域联动
+                // 简称：
+                orgNames: '',
+
+                // logo图标：
+                logoUrl: "",
+                // logoUrl3:localStorage.getItem("logo"),
+                imageUrl: '',
+
+                // 医院等级：
+                orgGradeName: '',
+                orgGrade: '',
+
+                // 确认修改上传返回id:
+                logoId: '',
+                // 基本信息：
+                orgList: '',
+                //二维码
+                dialogImageUrl: '',
+                dialogVisible: false,
+                qrId: '',
+                //以上是上传机构LOGO
+                activeName: 'first',
+                dialogFormVisible: false,
+                dialogFormVisible1: false,
+                dialogFormVisible2: false,
+                dialogFormVisible3: false,
+                moreSizeFormVisible: false,
+                form: {
+                    name: localStorage.getItem("orgName"),
+                    // 关注设置公众号标题：
+                    name2: '',
+                    region: '',
+                    date1: '',
+                    date2: '',
+                    delivery: false,
+                    type: [],
+                    resource: '',
+                    desc: '',
+                    otherAppName: '',
+                    otherAppSecret: '',
+                    otherAppId: '',
+                },
+                numberValidateForm: {
+                    age: ''
+                },
+                numberValidateForm2: {
+                    age: ''
+                },
+                dynamicValidateForm: {
+                    domains: [{
+                        value: ''
+                    }],
+                    email: ''
+                },
+                formName: {
+                    name: '',
+                    region: '',
+                    type: ''
+                },
+                formLabelAlign: {
+                    name: '',
+                    region: '',
+                    type: ''
+                },
+                dynamicTags: [],
+                inputVisible: false,
+                inputValue: '',
+                // 机构地址：
+                address: '',
+                orgCodeContent:'',
+                orgCodeSize1:0,
+                orgCodeSize2:0,
+              isShowMenu : 1
+
+            }
+        },
+        methods: {
+            //区域联动选择地区的值
+            handleChange(value) {
+                console.log(value)
+            },
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            // 头像上传函数：
+            handlePictureCardSuccess(a, b, c) {
+                this.logoId = a.data.recId
+                // this.dialogImageUrl = b.url;
+                this.dialogVisible = false;
+                this.logoUrl = b.url;
+            },
+
+            // 二维码上传函数：
+            handlePictureCardSuccess3(a, b, c) {
+                this.qrId = a.data.recId
+                this.dialogImageUrl = b.url;
+                this.dialogVisible3 = false;
+                // this.logoUrl3=b.url;
+            },
+            //以上是上传logo方法
+            handleAvatarSuccess(res, file) {
+                this.imageUrl = URL.createObjectURL(file.raw);
+            },
+            beforeAvatarUpload(file) {
+                const isPNG = file.type === 'image/png';
+                const isLt2M = file.size / 240 / 240 < 2;
+                if (!isPNG) {
+                    this.$message.error('上传头像图片只能是 PNG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('请上传2m以内的图片!');
+                }
+                return isPNG && isLt2M;
+            },
+            //以上是上传二维码方法
+
+            // 标签：
+            handleClose(tag) {
+                this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+            },
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(_ => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
+            },
+            // 标签：
+            handleInputConfirm() {
+                let inputValue = this.inputValue;
+                if (inputValue) {
+                    this.dynamicTags.push(inputValue);
+                    console.log("标签", this.dynamicTags)
+                }
+                this.inputVisible = false;
+                this.inputValue = '';
+
+            },
+            submitForm(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        alert('submit!');
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            },
+            removeDomain(item) {
+                var index = this.dynamicValidateForm.domains.indexOf(item)
+                if (index !== -1) {
+                    this.dynamicValidateForm.domains.splice(index, 1)
+                }
+            },
+            addDomain() {
+                this.dynamicValidateForm.domains.push({
+                    value: '',
+                    key: Date.now()
+                });
+            },
+
+            handleClick(tab, event) {
+                // console.log(tab, event);
+            },
+            onSubmit() {
+                // this.$alert('请确认', '保存成功', {
+                //     confirmButtonText: '确定',
+                //     });
+                var sureList = {
+                    "desp": this.form.desc,
+                    "logoResId": this.logoId,
+                    "orgGrade": this.orgGrade,
+                    "orgNames": this.orgNames,
+                    "qradvResId": this.qrId,
+                    "qradvResName": this.form.name2,
+                    "tags": this.dynamicTags,
+                    "otherAppName": this.form.otherAppName,
+                    "otherAppSecret": this.form.otherAppSecret,
+                    "otherAppId": this.form.otherAppId,
+                    "orgId":this.orgId
+                }
+                //  console.log(sureList);
+                infoSure(sureList).then(data => {
+                     console.log("医院设置信息",data)
+                    if (data.rtnCode == 1) {
+                        this.$message({
+                            message: '保存成功',
+                            type: 'success'
+                        });
+
+                    } else {
+                        this.$message({
+                            message: '保存失败',
+                            type: 'warning'
+                        });
+
+                    }
+                    //  window.location.reload()
+                })
+            },
+            sure() {
+                // alert("123")
+                var submitList = {
+                    "linkMan": this.formName.name,
+                    "mobile": this.numberValidateForm.age,
+                    "address": this.address,
+                    "email": this.dynamicValidateForm.email,
+                    "tel": this.numberValidateForm2.age,
+                    "orgId":this.orgId
+                }
+                infoSure(submitList).then(data => {
+                     console.log(data)
+                    if (data.rtnCode == 1) {
+                        this.$message({
+                            message: '保存成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message({
+                            message: '保存失败',
+                            type: 'warning'
+                        });
+                    }
+                })
+            },
+            getOrgCode(){
+              let params = {
+                "orgId":this.orgId,
+                "showBase64":1
+              }
+              orgCode(params).then(data => {
+                console.log(data)
+                if (data.rtnCode == 1) {
+                    this.orgCodeContent = "data:image/jpeg;base64," + data.data.base64
+                } else {
+                  this.$message({
+                    message: '机构二维码获取失败',
+                    type: 'warning'
+                  });
+
+                }
+                //  window.location.reload()
+              })
+            },
+            cm2px(cm) {
+                var dpi = this.getDPI();
+                var pixel = parseFloat(cm) / 25.4 * dpi[0];	//只计算x轴的dPI
+                return (parseInt(pixel))
+            },
+            getDPI() {
+              var arrDPI = new Array();
+              if (window.screen.deviceXDPI != undefined) {//ie 9
+                  arrDPI[0] = window.screen.deviceXDPI;
+                  arrDPI[1] = window.screen.deviceYDPI;
+              }else {//chrome firefox
+                  var tmpNode = document.createElement("DIV");
+                  tmpNode.style.cssText = "width:1in;height:1in;position:absolute;left:0px;top:0px;z-index:99;visibility:hidden";
+                  document.body.appendChild(tmpNode);
+                  arrDPI[0] = parseInt(tmpNode.offsetWidth);
+                  arrDPI[1] = parseInt(tmpNode.offsetHeight);
+                  tmpNode.parentNode.removeChild(tmpNode);
+              }
+              return arrDPI;
+          },
+          downOrgCode(v){
+              let vh = this.cm2px(v);
+              let url = this.microUrl + 'system/file/getImageToSize?width=' + vh + "&height=" + vh + "&businessId=" + localStorage.getItem("orgId");
+              return url;
+          }
+        },
+        components: {
+            commonHe,
+        },
+        created() {
+            hospitalSettings({}).then(data => {
+                console.log("医院设置", data)
+                this.orgId=data.data.orgId
+                this.logoUrl = data.data.logoResUrl
+
+                this.orgList = data.data
+                // 简称：
+                this.orgNames = data.data.orgNames
+                // 简介：
+                this.form.desc = data.data.desp
+                // 等级：
+                this.orgGradeName = data.data.orgGradeName
+                this.orgGrade = data.data.orgGrade
+
+                // 引导关注二维码标题：
+                this.form.name2 = data.data.qradvResName
+                // 二维码图片：
+                this.dialogImageUrl = data.data.qradvResUrl
+                // 标签：
+                this.dynamicTags = data.data.tags
+                // console.log("医院设置基本信息：", this.orgList)
+
+
+                // 联系人：
+                this.formName.name = data.data.linkMan
+                // 手机号：
+                this.numberValidateForm.age = data.data.mobile
+                // 座机：
+                this.numberValidateForm2.age = data.data.tel
+                // 邮箱：
+                this.dynamicValidateForm.email = data.data.email
+                // 地址：
+                this.address = data.data.address
+
+                this.form.otherAppId = data.data.otherAppId
+
+                this.form.otherAppSecret = data.data.otherAppSecret
+
+                this.form.otherAppName =  data.data.otherAppName
+
+                this.getOrgCode()
+
+                this.isShowMenu = localStorage.getItem("isShowMenu");
+
+                if(this.isShowMenu == undefined || this.isShowMenu != 0){
+                  this.isShowMenu = 1;
+                }
+
+                if(this.isShowMenu == 0){
+                  document.getElementsByClassName("style-box")[0].style.left = 0;
+                  document.getElementsByClassName("style-box")[0].style.top = 0;
+                  document.getElementsByClassName("style-box")[0].style.height = "auto";
+                  document.getElementsByClassName("style-box")[0].style.width = "100%";
+                }
+            })
+
+            this.isShowMenu = localStorage.getItem("isShowMenu");
+
+            if(this.isShowMenu == undefined || this.isShowMenu != 0){
+              this.isShowMenu = 1;
+            }
+        },
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+
+            if(this.isShowMenu == 0){
+              document.getElementsByClassName("style-box")[0].style.left = 0;
+              document.getElementsByClassName("style-box")[0].style.top = 0;
+              document.getElementsByClassName("style-box")[0].style.height = "auto";
+              document.getElementsByClassName("style-box")[0].style.width = "100%";
+            }
+        },
+        updated() {
+            localStorage.setItem("logo", this.logoUrl)
+        }
+    }
+</script>
+<style lang="scss">
+  @import '../styles/hxmstyle.css';
+
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .biaodan-hy {
+    padding-bottom: 10px;
+  }
+
+  .guanzhusz {
+    min-height: auto!important;
+  }
+
+  .guanzhusz .biaodan-hynr .el-input {
+    padding-left: 0!important;
+  }
+
+  .org_code_table{
+    width:100%;
+    text-align:center;
+    /*border:1px #ececec solid*/
+  }
+
+  .org_code_table td{
+    border:1px #ececec solid
+  }
+</style>

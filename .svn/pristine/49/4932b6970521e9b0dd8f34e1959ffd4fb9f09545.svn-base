@@ -1,0 +1,613 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="style-box">
+      <div id="box">
+        <div class="zhenge">
+          <div class="yggl-ym">
+            <div class="tabxuantou">
+              <ul class="tabxuantouul">
+                <li>
+                  <el-button type="text">
+                    <router-link to="/staff">员工管理</router-link>
+                  </el-button>
+                </li>
+                <li class="active">
+                  <el-button type="text">
+                    <router-link to="/staff">小组管理</router-link>
+                  </el-button>
+                </li>
+<!--                <li>-->
+<!--                  <el-button type="text">-->
+<!--                    <router-link to="/staff">员工角色管理</router-link>-->
+<!--                  </el-button>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                  <el-button type="text">-->
+<!--                    <router-link to="/staff">权限管理</router-link>-->
+<!--                  </el-button>-->
+<!--                </li>-->
+                <li>
+                  <el-button type="text">
+                    <router-link to="/staff">员工分组</router-link>
+                  </el-button>
+                </li>
+              </ul>
+            </div>
+            <div class="bfbjushang20">
+              <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+                <el-form-item class="xztpsc" label="小组图片">
+                  <el-upload class="shangchuan"
+                             :action="baseUrl"
+                             list-type="picture-card"
+                             :show-file-list="false"
+                             :on-success="handleAvatarSuccess"
+                             :before-upload="beforeAvatarUpload"
+
+                  >
+                    <!--                    on-preview="handlePictureCardPreview"-->
+                    <!--                    :on-remove="handleRemove"-->
+                    <!--                    list-type="picture-card"-->
+                    <img v-if="form.gimgUrl" :src="form.gimgUrl" width="150" height="150"/>
+                    <i else class="el-icon-plus"></i>
+                  </el-upload>
+                  <el-dialog :visible.sync="dialogVisible">
+                    <img width="100%" :src="dialogImageUrl" alt="">
+                  </el-dialog>
+                  <div class="rightmiaoshu">建议尺寸750*560px或4：3，JPG、PNG格式， 图片小于5M。</div>
+                </el-form-item>
+                <el-form-item label="小组名称" prop="gname">
+                  <el-input v-model="form.gname"></el-input>
+                  <div class="rightmiaoshu">小组名称不能超过12个字</div>
+                </el-form-item>
+                <el-form-item label="小组介绍">
+                  <el-input type="textarea" v-model="form.gdesc"></el-input>
+                  <div class="rightmiaoshu">小组介绍不能超过200字</div>
+                </el-form-item>
+                <el-form-item label="队长">
+                  <!--                  <el-select v-model="form.gteamleader.userId" multiple placeholder="请选择">-->
+                  <!--                    <el-option-->
+                  <!--                      v-for="item in options"-->
+                  <!--                      :key="item.userId"-->
+                  <!--                      :label="item.nameCn"-->
+                  <!--                      :value="item.userId">-->
+                  <!--                    </el-option>-->
+                  <!--                  </el-select>-->
+                  <el-button size="mini" type="primary" icon="el-icon-plus" @click="onShow('队长',getMemberChooseNo())">队长</el-button>
+                  <el-tag
+                    :key="tag.userId"
+                    v-for="tag in arrs"
+                    closable
+                    :disable-transitions="false"
+                    @close="handleClose(tag,arrs)"
+                  >
+                    {{tag.nameCn}}
+                  </el-tag>
+                </el-form-item>
+                <el-form-item label="成员">
+                  <!--                  <el-select v-model="form.gteamleader.userId" multiple placeholder="请选择">-->
+                  <!--                    <el-option-->
+                  <!--                      v-for="item in options"-->
+                  <!--                      :key="item.userId"-->
+                  <!--                      :label="item.nameCn"-->
+                  <!--                      :value="item.userId">-->
+                  <!--                    </el-option>-->
+                  <!--                  </el-select>-->
+                  <el-button size="mini" type="primary" icon="el-icon-plus" @click="onShow('成员',getMemberChooseNo())">成员</el-button>
+                  <el-tag
+                    :key="tag.userId"
+                    v-for="tag in form.groupUsers"
+                    closable
+                    :disable-transitions="false"
+                    @close="handleClose(tag,form.groupUsers)">
+                    {{tag.nameCn}}
+                  </el-tag>
+                </el-form-item>
+                <el-form-item label="电话">
+                  <el-input v-model="form.gphone"></el-input>
+                </el-form-item>
+
+                <el-form-item label="擅长疾病">
+                  <!--                  <el-select v-model="value2" multiple placeholder="请选择">-->
+                  <!--                    <el-option-->
+                  <!--                      v-for="item in options2"-->
+                  <!--                      :key="item.value"-->
+                  <!--                      :label="item.label"-->
+                  <!--                      :value="item.value">-->
+                  <!--                    </el-option>-->
+                  <!--                  </el-select>-->
+                  <el-button size="mini" type="primary" icon="el-icon-plus" @click="onShow('服务',getGroupDiseaseNo())">服务</el-button>
+                  <el-tag
+                    :key="tag.diseaseId"
+                    v-for="tag in form.diseases"
+                    closable
+                    :disable-transitions="false"
+                    @close="handleClose(tag,form.diseases)">
+                    {{tag.nameCn}}
+                  </el-tag>
+                  <div class="rightmiaoshu">最多只能选6个专长疾病</div>
+                </el-form-item>
+
+                <el-form-item>
+                  <el-button v-if="groupId" type="primary" @click="onSubmit('form')">保存</el-button>
+                  <el-button v-else @click="onAddSub('form')">添加</el-button>
+                  <el-button @click="$router.go(-1)">取消</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+
+            <div>
+              <el-dialog title="擅长疾病" :visible.sync="dialogFormVisible2">
+                <!--擅长疾病搜索框-->
+                <div style="width: 300px;">
+                  <el-input placeholder="请输入擅长疾病关键字" v-model="diseaseName" class="input-with-select" size="mini">
+                    <el-button slot="append" icon="el-icon-search"></el-button>
+                  </el-input>
+                </div>
+                <el-table :data="list" size="mini">
+                  <el-table-column type="index" label="#" width="150px"></el-table-column>
+                  <el-table-column property="nameCn" label="疾病"></el-table-column>
+                  <el-table-column label="操作" width="150px">
+                    <template slot-scope="scope">
+                      <el-button size="mini" type="text" v-if="scope.row.pit">以添加</el-button>
+                      <el-button size="mini" type="text" v-else @click="addItem(scope.row)">添加</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <div slot="footer" class="dialog-footer">
+                  <el-button @click="dialogFormVisible2 = false">关闭</el-button>
+<!--                  <el-button type="primary" @click="addServer()">确 定</el-button>-->
+                </div>
+              </el-dialog>
+            </div>
+
+            <div>
+              <el-dialog :title="title" :visible.sync="dialogFormVisible3">
+                <!--擅长疾病搜索框-->
+                <div style="width: 300px;">
+                  <el-input placeholder="请输入成员关键字" v-model="nameCn" class="input-with-select" size="mini">
+                    <el-button slot="append" icon="el-icon-search"></el-button>
+                  </el-input>
+                </div>
+                <el-table :data="list" size="mini">
+                  <el-table-column type="index" label="#" width="150px"></el-table-column>
+                  <el-table-column property="nameCn" label="姓名"></el-table-column>
+                  <el-table-column property="deptName" label="科室"></el-table-column>
+                  <el-table-column v-if="title == '队长'" label="操作" width="150px">
+                    <template slot-scope="scope">
+                      <el-button size="mini" type="text" v-if="arrs.length == 1">已添加队长</el-button>
+                      <el-button size="mini" type="text" v-else @click="addItem(scope.row)">添加队长</el-button>
+                    </template>
+                  </el-table-column>
+                  <el-table-column v-if="title == '成员'" label="操作" width="150px">
+                    <template slot-scope="scope">
+                      <el-button size="mini" type="text" v-if="scope.row.pit">已添加</el-button>
+                      <el-button size="mini" type="text" v-else @click="addItem(scope.row) ">添加</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <div slot="footer" class="dialog-footer">
+                  <el-button @click="dialogFormVisible3 = false">关闭</el-button>
+<!--                  <el-button type="primary" @click="addTable()">确 定</el-button>-->
+                </div>
+              </el-dialog>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+    import commonHe from '../../components/commonHe'
+    import baseUrl from '@/api/base.js'
+
+    export default {
+        data() {
+            return {
+
+                title: '',
+
+                groupId: '',
+                baseUrl: '',
+
+                form: {
+                    groupId: null,
+                    diseases: [],
+                    gdesc: null,
+                    gimg: null,
+                    gimgUrl: null,
+                    gname: null,
+                    gphone: null,
+                    groupUsers: [],
+                    gteamleader: null,
+                },
+
+                rules: {
+                    gname:[
+                        {required: true, message: '请输入名称!', trigger: ['blur','change']},
+                    ]
+                },
+
+                diseaseName: '',
+                nameCn: '',
+
+                list: [],
+
+                arrs: [],
+
+                arr: [],
+
+                arrss: [],
+
+                objs: {},
+
+                dialogImageUrl: '',
+                dialogVisible: false,
+
+                //以上是右边表头form
+
+                count: 1,
+                //tab切换方法默认第二个
+                dialogFormVisible: false,
+
+                dialogFormVisible2: false,
+
+                dialogFormVisible3: false,
+            };
+        },
+        created() {
+            this.userId = localStorage.getItem("userId")
+            this.groupId = this.$route.query.groupId
+            if (this.groupId) {
+                this.getGroupDetail()
+                // console.log(this.arr)
+            }
+            this.baseUrl = baseUrl + 'upload/res'
+
+            console.log(this.groupId)
+
+            this.getGroupDiseaseNo()
+            this.getMemberChooseNo()
+            // this.getGroupDetail()
+            // console.log(this.groupId)
+            // alert(this.userId)
+        },
+
+        watch: {
+            'diseaseName'() {
+                this.getGroupDiseaseNo()
+            },
+
+            'nameCn'() {
+                this.getMemberChooseNo()
+            }
+        },
+
+        methods: {
+
+            addleader(item) {
+                this.objs = item
+                this.arrs.push(item)
+            },
+
+            // addServer() {
+            //     this.form.diseases.push(...this.arr)
+            //     if (this.form.diseases.length > 5) {
+            //         let count = this.form.diseases.length - 5
+            //         for (let i = 0;(i + 1) < count;i++) {
+            //             this.form.diseases.splice(i,1)
+            //         }
+            //     }
+            //     this.arr = []
+            //     this.diseaseName = ''
+            //     this.dialogFormVisible2 = false
+            // },
+
+            // addTable() {
+            //     if (this.title == '队长') {
+            //         let obj = {
+            //             nameCn: this.objs.nameCn,
+            //             userId: this.objs.drId
+            //         }
+            //
+            //         // console.log(this.objs)
+            //         // console.log(obj)
+            //         // console.log(this.arrs.length)
+            //         // if (this.arrs.length != 1 ) {
+            //         //     this.arrs.splice(0,1)
+            //         // }
+            //         this.form.gteamleader = obj
+            //         console.log()
+            //         this.obj = {}
+            //         this.nameCn = ''
+            //     } else if (this.title == '成员') {
+            //
+            //         if (this.form.groupUsers == null) {
+            //             this.form.groupUsers = []
+            //         }
+            //
+            //         this.arr.forEach(item => {
+            //             let obj = {
+            //                 nameCn: item.nameCn,
+            //                 userId: item.drId
+            //             }
+            //             this.form.groupUsers.push(obj)
+            //         })
+            //
+            //         this.arr = []
+            //         this.nameCn = ''
+            //     }
+            //     this.list = []
+            //     this.dialogFormVisible3 = false
+            // },
+
+            onShow(title,call) {
+                this.title = title
+                if (title == '服务') {
+                    this.dialogFormVisible2 = true
+                    // this.getGroupDiseaseNo()
+                } else {
+                    this.dialogFormVisible3 = true
+                    // this.getMemberChooseNo()
+                }
+                call
+            },
+
+            addItem(item) {
+
+                if (this.title == '服务') {
+                    // console.log(1)
+                    if (this.form.diseases == null) {
+                        this.form.diseases = []
+                    }
+
+                    if (this.form.diseases.length >= 6) {
+                        return this.$message('最多只能选6个标签')
+                    }
+
+                    this.form.diseases.push(item)
+                    this.setSelected(this.list,this.form.diseases)
+                }
+
+                if (this.title == '队长') {
+                    // console.log(2)
+                    this.objs = item
+                    this.arrs.push(item)
+
+                    let obj = {
+                        nameCn: this.objs.nameCn,
+                        userId: this.objs.drId
+                    }
+
+                    this.form.gteamleader = obj
+                    this.setSelected(this.list,this.arrs)
+                }
+
+                if (this.title == '成员') {
+                    // console.log(3)
+                    if (this.form.groupUsers == null) {
+                        this.form.groupUsers = []
+                    }
+
+                    let obj = {
+                        nameCn: item.nameCn,
+                        userId: item.drId
+                    }
+
+                    this.form.groupUsers.push(obj)
+
+                    this.arrss.push(...this.form.groupUsers,...this.arrs)
+
+                    this.setSelected(this.list,this.arrss)
+                }
+
+            },
+
+            setSelected(list,arr) {
+                arr.forEach(item => {
+                    list.forEach(items => {
+                        if (item.diseaseId) {
+                            if (item.diseaseId == items.diseaseId) {
+                                this.$set(items,'pit',true)
+                            }
+                        }
+
+                        if (item.drId) {
+                            if (item.drId == items.drId) {
+                                this.$set(items,'pit',true)
+                            }
+                        }
+
+                        if (item.userid) {
+                            if (item.userid == items.drId) {
+                                this.$set(items,'pit',true)
+                            }
+                        }
+
+                        if (item.userId) {
+                            if (item.userId == items.drId) {
+                                this.$set(items,'pit',true)
+                            }
+                        }
+
+                    })
+                })
+                // console.log(list,arr)
+            },
+
+            onAddSub(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.$axios({
+                            url: 'group/add',
+                            method: 'post',
+                            data: this.form
+                        }).then(res => {
+                            console.log(res)
+                            this.$router.go(-1)
+                        })
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+
+            getGroupDetail() {
+                this.$axios({
+                    url: 'group/detail',
+                    method: 'post',
+                    data: {
+                        groupId: this.groupId
+                    }
+                }).then(res => {
+                    this.form = res.data.data
+                    if (this.form.gteamleader == null) {
+                        return
+                    } else {
+                        this.arrs.push(this.form.gteamleader)
+                    }
+
+                })
+            },
+
+            handleClose(tag,arr) {
+                arr.splice(arr.indexOf(tag),1)
+            },
+
+            //以下是上传图片方法
+
+            handleAvatarSuccess(res, file) {
+                this.form.gimg = res.data.recId
+                this.form.gimgUrl = URL.createObjectURL(file.raw);
+            },
+
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isPNG = file.type === 'image/png';
+                const isLt2M = file.size / 1024 / 1024 < 5;
+
+                if (!isJPG && !isPNG) {
+                    this.$message.error('上传头像图片只能是 JPG,PNG 格式!');
+                    return isJPG && isPNG
+                }
+
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 5MB!');
+                    return isLt2M
+                }
+            },
+
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+            },
+            //以上是上传图片方法
+            onSubmit(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.$axios({
+                            url: 'group/update',
+                            method: 'post',
+                            data: this.form
+                        }).then(res => {
+                            console.log('保存',res.data)
+                            this.$router.go(-1)
+                        })
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+
+            handleNodeClick(data) {
+                console.log(data);
+            },
+
+            getGroupDiseaseNo() {
+                this.$axios({
+                    url: 'group/disease/no',
+                    method: 'post',
+                    data: {
+                        groupId: this.groupId,
+                        diseaseName: this.diseaseName,
+                        pageNum: 1,
+                        pageSize:10
+
+                    }
+                }).then(res => {
+                    this.list = res.data.data
+
+                    if (this.form.diseases == null) {
+                        this.form.diseases = []
+                    }
+
+                    this.setSelected(this.list,this.form.diseases)
+                    // console.log('Disease',res)
+                })
+            },
+
+            getMemberChooseNo() {
+                this.$axios({
+                    url: 'group/member/choose/no',
+                    method: 'post',
+                    data: {
+                        groupId: this.groupId,
+                        nameCn: this.nameCn,
+                        pageNum: 1,
+                        pageSize:10
+                    }
+                }).then(res => {
+                    this.list = res.data.data
+                    this.setSelected(this.list,this.arrs)
+                    this.setSelected(this.list,this.arrss)
+                    // console.log('Member',res)
+                })
+            },
+
+        },
+        components: {
+            commonHe
+        },
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+        }
+
+    }
+</script>
+<style lang="scss">
+  @import '../../styles/hxmstyle.css';
+
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    width: 260px;
+    padding-left: 40px;
+  }
+</style>

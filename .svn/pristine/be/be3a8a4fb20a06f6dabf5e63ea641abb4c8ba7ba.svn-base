@@ -1,0 +1,1620 @@
+<template>
+  <div>
+    <commonHe v-if="isShowMenu == 1"></commonHe>
+    <div class="style-box">
+      <div id="box">
+        <div class="zhenge">
+          <div class="yggl-ym">
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+              <el-tab-pane label="图文" name="first">
+                <div class="biaodanyz">
+                  <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                    <el-form-item label="文章标题" prop="name">
+                      <el-input v-model="ruleForm.name" prop="name"></el-input>
+                    </el-form-item>
+                    <el-form-item class="bianjiq" label="文章内容" prop="textarea">
+                      <quill-editor
+                        v-model="ruleForm.textarea"
+                        ref="myQuillEditor"
+                        :options="editorOption"
+                        @blur="onEditorBlur($event)"
+                        @focus="onEditorFocus($event)"
+                        @change="onEditorChange($event)">
+                        >
+                      </quill-editor>
+                    </el-form-item>
+                    <el-form-item label="文章分组" prop="groups">
+                      <!-- <el-radio-group v-model="radio" v-for="(tp,index) in tps" :key="index">
+                          <el-radio  :label="tp.tpId" @change="getTp">{{tp.tpName}}</el-radio>
+                      </el-radio-group> -->
+                      <el-select v-model="ruleForm.groups" multiple @change="selectOptions" placeholder="请选择">
+                        <el-option
+                          v-for="item in options"
+                          :key="item.classifyId"
+                          :label="item.classifyName"
+                          :value="item.classifyId">
+                        </el-option>
+                      </el-select>
+                      <span style="color:gray;margin-left:10px">最多选择5个</span>
+                    </el-form-item>
+                    <el-form-item label="关键词" prop="dynamicTags">
+                      <div class="" v-model="ruleForm.dynamicTags">
+                        <el-tag
+                          :key="tag"
+                          v-for="tag in dynamicTags"
+                          closable
+                          :disable-transitions="false"
+                          @close="handleClose(tag)">
+                          {{tag}}
+                        </el-tag>
+                        <el-input
+                          class="input-new-tag"
+                          v-if="inputVisible"
+                          v-model="inputValue"
+                          ref="saveTagInput"
+                          size="small"
+                          @keyup.enter.native="handleInputConfirm"
+                          @blur="handleInputConfirm"
+                        >
+                        </el-input>
+                        <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 点击加入关键字</el-button>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="文章封面" prop="radio">
+                      <!-- <template>
+                        <el-radio v-model="rad" label="1" @change="selectOne">单封面</el-radio>
+                        <el-radio v-model="rad" label="2" @change="selectThree">三封面</el-radio>
+                      </template> -->
+                      <el-radio-group v-model="ruleForm.radio" v-for="(tp,index) in tps" :key="index">
+                        <el-radio style="margin-right: 15px;" :label="tp.newsStyle" @change="getTp">{{tp.newsStyleName}}</el-radio>
+                      </el-radio-group>
+                      <div v-show="threeCover">
+                        <!-- 三封面第一张： -->
+                        <div style="width:400px;height:150px;margin-top:10px">
+                          <div class="defaultImg" style="width:150px;height:150px;float:left">
+                            <img :src="threeCoverOne" alt="" style="width:150px;height:150px">
+                          </div>
+                          <el-button @click="threeoneOpen" style="margin-left:10px;margin-top:60px" type="primary"
+                                     size="small">上传图片
+                          </el-button>
+                          <!-- 上传弹窗： -->
+                          <el-dialog
+                            title="请先裁剪再上传"
+                            :visible.sync="threeOne"
+                            width="30%"
+                            :close-on-click-modal="false"
+                          >
+                            <el-form-item>
+                              <template>
+                                <div class="wrapper">
+                                  <div class="model" v-show="model" @click="model = false">
+                                    <div class="model-show">
+                                      <img :src="modelSrc" alt="">
+                                    </div>
+                                  </div>
+                                  <div class="content">
+                                    <div class="show-info">
+                                      <p style="font-size:16px">注意： 宽高固定比例 4 : 3</p>
+                                      <div class="test">
+                                        <vueCropper ref="cropper2" :img="example2.img " :outputSize="example2.size"
+                                                    :outputType="example2.outputType"
+                                                    :info="example2.info" :canScale="example2.canScale"
+                                                    :autoCrop="example2.autoCrop"
+                                                    :autoCropWidth="example2.autoCropWidth"
+                                                    :autoCropHeight="example2.autoCropHeight" :fixed="example2.fixed"
+                                                    :fixedNumber="example2.fixedNumber" :enlarge="4"></vueCropper>
+                                      </div>
+                                      <label class="btn" for="upload2"
+                                             @click="uploadSure=false;">选择图片</label>
+                                      <input type="file" id="upload2" style="position:absolute; clip:rect(0 0 0 0);"
+                                             accept="image/png, image/jpeg, image/gif, image/jpg"
+                                             @change="uploadImg($event,2)">
+                                      <el-button v-show="tailoring" @click="finish2()" class="btn">裁剪</el-button>
+                                      <el-button v-show="uploadSure" v-loading.fullscreen.lock="fullscreenLoading"
+                                                 @click="sureUpload()" class="btn">确认上传
+                                      </el-button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+                            </el-form-item>
+                            <!-- <span slot="footer" class="dialog-footer">
+                              <el-button @click="threeOne = false">取 消</el-button>
+                              <el-button type="primary" @click="threeOne = false">确 定</el-button>
+                            </span> -->
+                          </el-dialog>
+
+                          <!-- 弹窗完： -->
+
+                        </div>
+                        <!-- 三封面第二张： -->
+                        <div style="width:400px;height:150px;margin-top:10px">
+                          <div class="defaultImg" style="width:150px;height:150px;float:left">
+                            <img :src="threeCoverTwo" alt="" style="width:150px;height:150px">
+                          </div>
+                          <el-button @click="threetwoOpen" style="margin-left:10px;margin-top:60px" type="primary"
+                                     size="small">上传图片
+                          </el-button>
+                          <el-dialog
+                            title="提示"
+                            :visible.sync="threeTwo"
+                            width="30%"
+                            :close-on-click-modal="false"
+                          >
+                            <el-form-item>
+                              <template>
+                                <div class="wrapper">
+                                  <div class="model" v-show="model" @click="model = false">
+                                    <div class="model-show">
+                                      <img :src="modelSrc" alt="">
+                                    </div>
+                                  </div>
+                                  <div class="content">
+                                    <div class="show-info">
+                                      <p style="font-size:16px">注意： 宽高固定比例 4 : 3</p>
+                                      <div class="test">
+                                        <vueCropper ref="cropper2" :img="example2.img " :outputSize="example2.size"
+                                                    :outputType="example2.outputType"
+                                                    :info="example2.info" :canScale="example2.canScale"
+                                                    :autoCrop="example2.autoCrop"
+                                                    :autoCropWidth="example2.autoCropWidth"
+                                                    :autoCropHeight="example2.autoCropHeight" :fixed="example2.fixed"
+                                                    :fixedNumber="example2.fixedNumber" :enlarge="4"></vueCropper>
+                                      </div>
+                                      <label class="btn" for="upload2"
+                                             @click="uploadSure=false;">选择图片</label>
+                                      <input type="file" id="upload2" style="position:absolute; clip:rect(0 0 0 0);"
+                                             accept="image/png, image/jpeg, image/gif, image/jpg"
+                                             @change="uploadImg($event,2)">
+                                      <el-button v-show="tailoring" @click="finish22()" class="btn">裁剪</el-button>
+                                      <el-button v-show="uploadSure" v-loading.fullscreen.lock="fullscreenLoading"
+                                                 @click="sureUpload2()" class="btn">确认上传
+                                      </el-button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+                            </el-form-item>
+                          </el-dialog>
+                        </div>
+                        <!-- 三封面第三章： -->
+                        <div style="width:400px;height:150px;margin-top:10px">
+                          <div class="defaultImg" style="width:150px;height:150px;float:left">
+                            <img :src="threeCoverThree" alt="" style="width:150px;height:150px">
+                          </div>
+                          <el-button @click="threeThreeOpen" style="margin-left:10px;margin-top:60px" type="primary"
+                                     size="small">上传图片
+                          </el-button>
+                          <el-dialog
+                            title="提示"
+                            :visible.sync="threeThree"
+                            width="30%"
+                            :close-on-click-modal="false"
+                          >
+                            <el-form-item>
+                              <template>
+                                <div class="wrapper">
+                                  <div class="model" v-show="model" @click="model = false">
+                                    <div class="model-show">
+                                      <img :src="modelSrc" alt="">
+                                    </div>
+                                  </div>
+                                  <div class="content">
+                                    <div class="show-info">
+                                      <p style="font-size:16px">注意： 宽高固定比例 4 : 3</p>
+                                      <div class="test">
+                                        <vueCropper ref="cropper2" :img="example2.img " :outputSize="example2.size"
+                                                    :outputType="example2.outputType"
+                                                    :info="example2.info" :canScale="example2.canScale"
+                                                    :autoCrop="example2.autoCrop"
+                                                    :autoCropWidth="example2.autoCropWidth"
+                                                    :autoCropHeight="example2.autoCropHeight" :fixed="example2.fixed"
+                                                    :fixedNumber="example2.fixedNumber" :enlarge="4"></vueCropper>
+                                      </div>
+                                      <label class="btn" for="upload2"
+                                             @click="uploadSure=false;">选择图片</label>
+                                      <input type="file" id="upload2" style="position:absolute; clip:rect(0 0 0 0);"
+                                             accept="image/png, image/jpeg, image/gif, image/jpg"
+                                             @change="uploadImg($event,2)">
+                                      <el-button v-show="tailoring" @click="finish23()" class="btn">裁剪</el-button>
+                                      <el-button v-show="uploadSure" v-loading.fullscreen.lock="fullscreenLoading"
+                                                 @click="sureUpload3()" class="btn">确认上传
+                                      </el-button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+                            </el-form-item>
+                          </el-dialog>
+                        </div>
+                      </div>
+                      <!-- 单大图封面： -->
+                      <div v-show="oneBigCover">
+                        <div style="width:400px;height:150px;margin-top:10px">
+                          <div class="defaultImg" style="width:150px;height:150px;float:left">
+                            <img :src="onlyoneBig" alt="" style="width:150px;height:150px">
+                          </div>
+                          <el-button @click="bigOneOpen" style="margin-left:10px;margin-top:60px" type="primary"
+                                     size="small">上传图片
+                          </el-button>
+                          <el-dialog
+                            title="提示"
+                            :visible.sync="bigOne"
+                            width="30%"
+                            :close-on-click-modal="false"
+                          >
+                            <el-form-item>
+                              <template>
+                                <div class="wrapper">
+                                  <div class="model" v-show="model" @click="model = false">
+                                    <div class="model-show">
+                                      <img :src="modelSrc" alt="">
+                                    </div>
+                                  </div>
+                                  <div class="content">
+                                    <div class="show-info">
+                                      <p style="font-size:16px">注意： 宽高固定比例 4 : 3</p>
+                                      <div class="test">
+                                        <vueCropper ref="cropper2" :img="example2.img " :outputSize="example2.size"
+                                                    :outputType="example2.outputType"
+                                                    :info="example2.info" :canScale="example2.canScale"
+                                                    :autoCrop="example2.autoCrop"
+                                                    :autoCropWidth="example2.autoCropWidth"
+                                                    :autoCropHeight="example2.autoCropHeight" :fixed="example2.fixed"
+                                                    :fixedNumber="example2.fixedNumber" :enlarge="4"></vueCropper>
+                                      </div>
+                                      <label class="btn" for="upload2" @click="uploadSure=false;">选择图片</label>
+                                      <input type="file" id="upload2" style="position:absolute; clip:rect(0 0 0 0);"
+                                             accept="image/png, image/jpeg, image/gif, image/jpg"
+                                             @change="uploadImg($event,2)">
+                                      <el-button v-show="tailoring" @click="finish24()" class="btn">裁剪</el-button>
+                                      <el-button v-show="uploadSure" v-loading.fullscreen.lock="fullscreenLoading"
+                                                 @click="sureUpload4()" class="btn">确认上传
+                                      </el-button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+                            </el-form-item>
+                          </el-dialog>
+                        </div>
+                      </div>
+                      <!-- 单小图封面： -->
+                      <div v-show="oneSmallCover">
+                        <div style="width:400px;height:150px;margin-top:10px">
+                          <div class="defaultImg" style="width:150px;height:150px;float:left">
+                            <img :src="onlyoneSmall" alt="" style="width:150px;height:150px">
+                          </div>
+                          <el-button @click="smallOneOpen" style="margin-left:10px;margin-top:60px" type="primary"
+                                     size="small">上传图片
+                          </el-button>
+                          <el-dialog
+                            title="提示"
+                            :visible.sync="smallOne"
+                            width="30%"
+                            :close-on-click-modal="false"
+                          >
+                            <el-form-item>
+                              <template>
+                                <div class="wrapper">
+                                  <div class="model" v-show="model" @click="model = false">
+                                    <div class="model-show">
+                                      <img :src="modelSrc" alt="">
+                                    </div>
+                                  </div>
+                                  <div class="content">
+                                    <div class="show-info">
+                                      <p style="font-size:16px">注意： 宽高固定比例 4 : 3</p>
+                                      <div class="test">
+                                        <vueCropper ref="cropper2" :img="example2.img " :outputSize="example2.size"
+                                                    :outputType="example2.outputType"
+                                                    :info="example2.info" :canScale="example2.canScale"
+                                                    :autoCrop="example2.autoCrop"
+                                                    :autoCropWidth="example2.autoCropWidth"
+                                                    :autoCropHeight="example2.autoCropHeight" :fixed="example2.fixed"
+                                                    :fixedNumber="example2.fixedNumber" :enlarge="4"></vueCropper>
+                                      </div>
+                                      <label class="btn" for="upload2"
+                                             @click="uploadSure=false;">选择图片</label>
+                                      <input type="file" id="upload2" style="position:absolute; clip:rect(0 0 0 0);"
+                                             accept="image/png, image/jpeg, image/gif, image/jpg"
+                                             @change="uploadImg($event,2)">
+                                      <el-button v-show="tailoring" @click="finish25()" class="btn">裁剪</el-button>
+                                      <el-button v-show="uploadSure" v-loading.fullscreen.lock="fullscreenLoading"
+                                                 @click="sureUpload5()" class="btn">确认上传
+                                      </el-button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </template>
+                            </el-form-item>
+                          </el-dialog>
+                        </div>
+
+                      </div>
+
+                      <!-- 不同的封面上传选项： -->
+                      <!-- <div class="shangchuantu" v-show="choseOne">
+                        <el-upload
+                          :limit='1'
+                          :action="addUrl"
+                          list-type="picture-card"
+                          :on-success="handlePictureCardSuccessOne"
+                          :on-remove="handleRemoveOne"
+                          :on-preview="handlePictureCardPreview"
+                          >
+                          <i class="el-icon-plus"></i>
+                        </el-upload>
+                        <el-dialog :visible.sync="dialogVisible" size="tiny">
+                          <img width="100%" :src="dialogImageUrl">
+                        </el-dialog>
+                         <span style="color:gray">注意：请上传10M以内的图片</span>
+                      </div>
+                        <div class="shangchuantu" v-show="choseThree">
+                          <div style="float:left;">
+                            <el-upload
+                              :limit="3"
+                              :action="addUrl"
+                              list-type="picture-card"
+                              :on-success="handlePictureCardSuccessThree"
+                              :on-preview="handlePictureCardPreview"
+                              :on-remove="handleRemoveThree">
+                              <i class="el-icon-plus"></i>
+                            </el-upload>
+                            <el-dialog :visible.sync="dialogVisible" size="tiny">
+                              <img width="100%" :src="dialogImageUrl" alt="">
+                            </el-dialog>
+                            <span style="color:gray">注意：请上传10M以内的图片</span>
+                          </div>
+                        </div> -->
+                    </el-form-item>
+                    <el-form-item>
+                      <el-button type="primary" @click="submitForm">立即创建</el-button>
+                      <el-button @click="back()">取消</el-button>
+                    </el-form-item>
+                    <!-- 图片裁剪测试： -->
+
+                  </el-form>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+    import commonHe from '../../components/commonHe'
+    // 富文本：
+    import {quillEditor} from "vue-quill-editor"; //调用编辑器
+    import {quillRedefine} from 'vue-quill-editor-upload'
+    // 图片裁剪：
+    import {VueCropper} from "vue-cropper";
+    // 封面图base64图片上传：
+    import {coverUpload} from '../../api/api'
+
+    import axios from '../../api/axios';
+
+    import 'quill/dist/quill.core.css';
+    import 'quill/dist/quill.snow.css';
+    import 'quill/dist/quill.bubble.css';
+
+    // 栏目api:
+    import {tps} from '../../api/api'
+    // 图片上传：
+    import {updateImages} from '../../api/api'
+    import {addUrl} from '../../api/api'
+    // 新建接口：
+    import {newsArticelAdd} from '../../api/api'
+    // 文章分组：
+    import {articleClassifies} from '../../api/api'
+    // 封面类型：
+    import {coverClassifies} from '../../api/api'
+    import {newBase} from '../../api/api'
+
+    export default {
+        data() {
+            return {
+                orgBackUrl: newBase,
+                // 三封面图一：
+                threeCoverOne: '',
+                threeCoverTwo: '',
+                threeCoverThree: '',
+                threeoneRecId: '',
+                threetwoRecId: '',
+                threethreeRecId: '',
+                threeRecId: [],
+
+                // 单大图封面：
+                onlyoneBig: '',
+                onlyoneBigRecid: '',
+
+                // 单小图封面：
+                onlyoneSmall: '',
+                onlyoneSmallRecid: [],
+                // 图片上传加载中：
+                fullscreenLoading: false,
+                // 裁剪上传后返回值：
+                tailoringReturn: {},
+                // 裁剪确认上传按钮：
+                tailoring: false,
+                uploadSure: false,
+
+                coverFile: [],
+                // 图片上传弹框：
+                threeOne: false,
+                threeTwo: false,
+                threeThree: false,
+                bigOne: false,
+                smallOne: false,
+                // 封面上传：
+                threeCover: false,
+                oneBigCover: false,
+                oneSmallCover: false,
+                newModelSrc: [],
+                // 图片裁剪数据：
+                model2: false,
+                model: false,
+                modelSrc: '',
+                crap: false,
+                previews: {},
+                form: {
+                    head: ''
+                },
+                example2: {
+                    //img的路径自行修改
+                    img: '$oss.url + \'/\' + form.head ',
+                    info: true,
+                    size: 0.5,
+                    outputType: 'jpeg',
+                    canScale: true,
+                    autoCrop: true,
+                    // 只有自动截图开启 宽度高度才生效
+                    autoCropWidth: 300,
+                    autoCropHeight: 250,
+                    fixed: true,
+                    // 真实的输出宽高
+                    infoTrue: true,
+                    fixedNumber: [4, 3]
+                },
+                downImg: '#',
+                // 文章分组：
+                options: [],
+                groups: '',
+                addUrl: addUrl,
+                allSelect: [],
+                // 栏目：
+
+                tps: [],
+                // 单选：
+                radio: '1',
+                // 单选id:
+                tpId: "",
+                // 富文本：
+                textarea: '',
+                editorOption: {},
+                //以下是图片上传相关
+                imageUrl: '',
+                dialogImageUrl: '',
+                dialogVisible: false,
+                // 图片：
+                rad: '1',
+                // 单一张图片：
+                urlOne: [],
+                // 传三张：
+                urlThree: [],
+                //以下是标签输入相关
+                dynamicTags: [],
+                inputVisible: false,
+                inputValue: '',
+                //以上是标签输入相关
+                //  封面上传一张图：
+                choseOne: true,
+                // 三张：
+                choseThree: false,
+                ruleForm: {
+                    name: '',
+                    textarea: '',
+                    groups: [],
+                    dynamicTags: [],
+                    radio: '',
+                },
+                rules: {
+                    name: [
+                        {required: true, message: '请输入文章标题', trigger: 'blur'},
+                        {min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur'}
+                    ],
+                    textarea: [
+                        {required: true, message: '请输入文章内容', trigger: ['change','blur']}
+                    ],
+                    // groups: [
+                    //     {type: 'array',required: true, message: '请至少选择一个分组', trigger: 'change'}
+                    // ],
+                    dynamicTags: [
+                        { type: 'array',required: true, message: '请添加关键词', trigger: ['blur']}
+                    ],
+                    radio: [
+                        {required: true, message: '请至少选择一个活动性质' , trigger: ['change','blur']}
+                    ]
+                },
+                //tab切换方法默认第1个
+                activeName: 'first',
+                fits: ['这里是昵称'],
+                url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+                input1: '',
+                select: '',
+                value: '',
+                form: {region: ''},
+                //表格
+                tableData: [{
+                    name: '王小虎',
+                    leixing: '机构',
+                    age: '20',
+                    guanzhu: '李四等3人',
+                    laiyuan: '通过网上注册',
+                    date: '2019-05-02',
+                }, {
+                    name: '张三',
+                    leixing: '机构',
+                    age: '20',
+                    guanzhu: '李四等3人',
+                    laiyuan: '通过网上注册',
+                    date: '2019-05-02',
+                }, {
+                    name: '小虎',
+                    leixing: '机构',
+                    age: '30',
+                    guanzhu: '李四等3人',
+                    laiyuan: '通过网上注册',
+                    date: '2019-10-02',
+                }],
+                isShowMenu: 1
+            };
+
+        },
+        methods: {
+            // 图片上传弹框：
+            threeoneOpen() {
+                this.uploadSure = false
+                this.threeOne = true
+            },
+
+            threetwoOpen() {
+                this.example2.img = '$oss.url + \'/\' + form.head'
+                this.uploadSure = false
+                this.threeTwo = true
+            },
+
+            threeThreeOpen() {
+                this.example2.img = '$oss.url + \'/\' + form.head'
+                this.uploadSure = false
+                this.threeThree = true
+            },
+
+            bigOneOpen() {
+                this.example2.img = '$oss.url + \'/\' + form.head'
+                this.uploadSure = false
+                this.bigOne = true
+            },
+
+            smallOneOpen() {
+                this.example2.img = '$oss.url + \'/\' + form.head'
+                this.uploadSure = false
+                this.smallOne = true
+            },
+
+            // 图片裁剪：
+            // 三封面第一张：
+            finish2(event) {
+                this.tailoring = false;
+                this.uploadSure = true;
+                this.model = false;
+                //  var formData=new FormData();
+                this.newModelSrc = []
+                this.$refs.cropper2.getCropData((data) => {
+                    this.modelSrc = data
+                    // console.log("裁剪得到的", this.modelSrc)
+                    //裁剪后的图片显示
+                    this.example2.img = this.modelSrc;
+                    this.uploadFile = this.toBlob(data)
+                    // console.log("裁剪后",data)
+                    let baseString = data.replace(/^data:image\/\w+;base64,/, "");
+                    this.newModelSrc.push(baseString)
+                    // console.log(this.newModelSrc,"替换后")
+                    // console.log("转换后data",this.toBlob(data))
+
+                })
+
+            },
+
+            sureUpload() {
+                this.fullscreenLoading = true;
+                this.threeOne = false
+                var formData = new FormData()
+                var nameImg = new Date().getTime() + '.png'
+                formData.append('file', this.uploadFile, nameImg)
+                // console.log(formData,"file格式。。。")
+                axios.post(this.orgBackUrl + "upload/res", formData,).then(res => {
+                        res.data
+                        this.tailoringReturn = res.data.data
+                        if (res.data.rtnCode == 1) {
+                            this.threeCoverOne = this.tailoringReturn.url
+                            this.threeoneRecId = this.tailoringReturn.recId
+                            this.threeRecId = [this.threeoneRecId, this.threetwoRecId, this.threethreeRecId]
+                            console.log(this.threeRecId, "封面后面图ids")
+                            this.fullscreenLoading = false;
+                            this.$message({
+                                message: '图片上传成功',
+                                type: 'success'
+                            });
+
+                        } else {
+                            this.fullscreenLoading = false;
+                            this.$message({
+
+                                message: '图片上传失败，请重新上传',
+                                type: 'success'
+                            });
+
+                        }
+                        console.log(this.tailoringReturn, "图片上传结果")
+                    }
+                )
+
+
+            },
+
+            // 三封面第二张：
+            finish22() {
+                this.tailoring = false;
+                this.uploadSure = true;
+                this.model = false;
+                //  var formData=new FormData();
+                this.newModelSrc = []
+                this.$refs.cropper2.getCropData((data) => {
+                    this.modelSrc = data
+                    // console.log("裁剪得到的", this.modelSrc)
+                    //裁剪后的图片显示
+                    this.example2.img = this.modelSrc;
+                    this.uploadFile = this.toBlob(data)
+                    // console.log("裁剪后",data)
+                    let baseString = data.replace(/^data:image\/\w+;base64,/, "");
+                    this.newModelSrc.push(baseString)
+                    // console.log(this.newModelSrc,"替换后")
+                    // console.log("转换后data",this.toBlob(data))
+
+                })
+
+            },
+
+            sureUpload2() {
+                this.fullscreenLoading = true;
+                this.threeTwo = false
+                var formData = new FormData()
+                var nameImg = new Date().getTime() + '.png'
+                formData.append('file', this.uploadFile, nameImg)
+                // console.log(formData,"file格式。。。")
+                axios.post(this.orgBackUrl + "upload/res", formData,).then(res => {
+                        res.data
+                        this.tailoringReturn = res.data.data
+                        if (res.data.rtnCode == 1) {
+                            this.threeCoverTwo = this.tailoringReturn.url
+                            this.threetwoRecId = this.tailoringReturn.recId
+                            this.threeRecId = [this.threeoneRecId, this.threetwoRecId, this.threethreeRecId]
+                            console.log(this.threeRecId, "封面后面图ids")
+                            this.fullscreenLoading = false;
+                            this.$message({
+                                message: '图片上传成功',
+                                type: 'success'
+                            });
+
+                        } else {
+                            this.fullscreenLoading = false;
+                            this.$message({
+
+                                message: '图片上传失败，请重新上传',
+                                type: 'success'
+                            });
+
+                        }
+                        console.log(this.tailoringReturn, "图片上传结果")
+                    }
+                )
+
+
+            },
+            // 三封面第三章：
+            finish23() {
+                this.tailoring = false;
+                this.uploadSure = true;
+                this.model = false;
+                //  var formData=new FormData();
+                this.newModelSrc = []
+                this.$refs.cropper2.getCropData((data) => {
+                    this.modelSrc = data
+                    // console.log("裁剪得到的", this.modelSrc)
+                    //裁剪后的图片显示
+                    this.example2.img = this.modelSrc;
+                    this.uploadFile = this.toBlob(data)
+                    // console.log("裁剪后",data)
+                    let baseString = data.replace(/^data:image\/\w+;base64,/, "");
+                    this.newModelSrc.push(baseString)
+                    // console.log(this.newModelSrc,"替换后")
+                    // console.log("转换后data",this.toBlob(data))
+
+                })
+
+            },
+            sureUpload3() {
+                this.fullscreenLoading = true;
+                this.threeThree = false
+                var formData = new FormData()
+                var nameImg = new Date().getTime() + '.png'
+                formData.append('file', this.uploadFile, nameImg)
+                // console.log(formData,"file格式。。。")
+                axios.post(this.orgBackUrl + "upload/res", formData,).then(res => {
+                        res.data
+                        this.tailoringReturn = res.data.data
+                        if (res.data.rtnCode == 1) {
+                            this.threeCoverThree = this.tailoringReturn.url
+                            this.threethreeRecId = this.tailoringReturn.recId
+                            this.threeRecId = [this.threeoneRecId, this.threetwoRecId, this.threethreeRecId]
+                            console.log(this.threeRecId, "封面后面图ids")
+                            this.fullscreenLoading = false;
+                            this.$message({
+                                message: '图片上传成功',
+                                type: 'success'
+                            });
+
+                        } else {
+                            this.fullscreenLoading = false;
+                            this.$message({
+
+                                message: '图片上传失败，请重新上传',
+                                type: 'success'
+                            });
+
+                        }
+                        console.log(this.tailoringReturn, "图片上传结果")
+                    }
+                )
+
+
+            },
+            // 单大图封面：
+            finish24() {
+                this.tailoring = false;
+                this.uploadSure = true;
+                this.model = false;
+                //  var formData=new FormData();
+                this.newModelSrc = []
+                this.$refs.cropper2.getCropData((data) => {
+                    this.modelSrc = data
+                    // console.log("裁剪得到的", this.modelSrc)
+                    //裁剪后的图片显示
+                    this.example2.img = this.modelSrc;
+                    this.uploadFile = this.toBlob(data)
+                    // console.log("裁剪后",data)
+                    let baseString = data.replace(/^data:image\/\w+;base64,/, "");
+                    this.newModelSrc.push(baseString)
+                    // console.log(this.newModelSrc,"替换后")
+                    // console.log("转换后data",this.toBlob(data))
+
+                })
+
+            },
+            sureUpload4() {
+                this.fullscreenLoading = true;
+                this.bigOne = false
+                var formData = new FormData()
+                var nameImg = new Date().getTime() + '.png'
+                formData.append('file', this.uploadFile, nameImg)
+                // console.log(formData,"file格式。。。")
+                axios.post(this.orgBackUrl + "upload/res", formData,).then(res => {
+                        res.data
+                        this.tailoringReturn = res.data.data
+                        if (res.data.rtnCode == 1) {
+                            this.threeRecId = [],
+                                this.onlyoneBigRecid = this.tailoringReturn.recId
+                            this.onlyoneBig = this.tailoringReturn.url
+                            this.threeRecId.push(res.data.data.recId)
+                            // this.onlyoneBigRecid=this.onlyoneBigRecid.push(this.tailoringReturn.recId)
+                            console.log("onlyoneBigRecid", "单大图id", this.threeRecId)
+                            this.fullscreenLoading = false;
+                            this.$message({
+                                message: '图片上传成功',
+                                type: 'success'
+                            });
+
+                        } else {
+                            this.fullscreenLoading = false;
+                            this.$message({
+
+                                message: '图片上传失败，请重新上传',
+                                type: 'success'
+                            });
+
+                        }
+                        console.log(this.tailoringReturn, "图片上传结果")
+                    }
+                )
+
+
+            },
+            // 单小图封面：
+            finish25() {
+                this.tailoring = false;
+                this.uploadSure = true;
+                this.model = false;
+                //  var formData=new FormData();
+                this.newModelSrc = []
+                this.$refs.cropper2.getCropData((data) => {
+                    this.modelSrc = data
+                    // console.log("裁剪得到的", this.modelSrc)
+                    //裁剪后的图片显示
+                    this.example2.img = this.modelSrc;
+                    this.uploadFile = this.toBlob(data)
+                    // console.log("裁剪后",data)
+                    let baseString = data.replace(/^data:image\/\w+;base64,/, "");
+                    this.newModelSrc.push(baseString)
+                    // console.log(this.newModelSrc,"替换后")
+                    // console.log("转换后data",this.toBlob(data))
+                })
+            },
+
+            sureUpload5() {
+                this.fullscreenLoading = true;
+                this.smallOne = false
+                var formData = new FormData()
+                var nameImg = new Date().getTime() + '.png'
+                formData.append('file', this.uploadFile, nameImg)
+                // console.log(formData,"file格式。。。")
+                axios.post(this.orgBackUrl + "upload/res", formData,).then(res => {
+                        res.data
+                        this.tailoringReturn = res.data.data
+                        if (res.data.rtnCode == 1) {
+                            this.threeRecId = [],
+                                this.threeRecId.push(res.data.data.recId)
+
+                            this.onlyoneSmall = this.tailoringReturn.url
+
+                            this.fullscreenLoading = false;
+                            this.$message({
+                                message: '图片上传成功',
+                                type: 'success'
+                            });
+
+                        } else {
+                            this.fullscreenLoading = false;
+                            this.$message({
+
+                                message: '图片上传失败，请重新上传',
+                                type: 'success'
+                            });
+
+                        }
+                        console.log(this.tailoringReturn, "图片上传结果")
+                    }
+                )
+
+
+            },
+
+            uploadImg(e, num) {
+                //上传图片
+                this.example2.img = ''
+                var file = e.target.files[0]
+                if (!/\.(gif|jpg|jpeg|png|bmp|GIF|JPG|PNG)$/.test(e.target.value)) {
+                    alert('图片类型必须是.gif,jpeg,jpg,png,bmp中的一种')
+                    return false
+                }
+                // console.log(file,"file")
+                var reader = new FileReader()
+                // console.log(reader)
+                reader.onload = (e) => {
+                    this.tailoring = true
+                    let data
+                    data = e.target.result
+                    if (typeof e.target.result === 'object') {
+                        // 把Array Buffer转化为blob 如果是base64不需要
+                        data = window.URL.createObjectURL(new Blob([e.target.result]))
+                        // console.log("结果5555",data)
+                    } else {
+                        data = e.target.result
+                    }
+                    if (num === 1) {
+                        this.option.img = data
+                    } else if (num === 2) {
+                        this.example2.img = data
+                    }
+                }
+                // 转化为base64
+                // reader.readAsDataURL(file)
+                // 转化为blobcs
+                reader.readAsArrayBuffer(file)
+
+            },
+            // base64转blob
+            toBlob(ndata) {
+                //ndata为base64格式地址
+                // console.log(ndata)
+                let arr = ndata.split(','),
+                    mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]),
+                    n = bstr.length,
+                    u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], {
+                    type: mime
+                })
+            },
+
+            // 文章分组多选：
+            selectOptions(a) {
+                // this.allSelect=[]
+                if (this.ruleForm.groups.length < 6) {
+                    this.allSelect = a
+                    // return
+                } else {
+                    this.ruleForm.groups = this.allSelect
+                    this.$message({
+                        message: '文章分组最多选择5个',
+                        type: 'warning'
+                    });
+                }
+                // console.log(this.groups,"groups")
+                // console.log(this.allSelect,"select")
+            },
+            // 栏目选择：
+            getTp(val) {
+                this.tpId = val;
+                this.ruleForm.radio = val
+                // console.log(this.tpId)
+                // alert(this.tpId)
+                if (this.tpId === "1012104") {
+                    this.threeCover = true
+                    this.oneBigCover = false
+                    this.oneSmallCover = false
+                } else if (this.tpId === "1012103") {
+                    this.threeCover = false
+                    this.oneBigCover = true
+                    this.oneSmallCover = false
+                } else if (this.tpId === "1012102") {
+                    this.threeCover = false
+                    this.oneBigCover = false
+                    this.oneSmallCover = true
+                } else if (this.tpId === "1012101") {
+                    this.threeCover = false
+                    this.oneBigCover = false
+                    this.oneSmallCover = false
+                }
+            },
+            //图片上传方法开始
+            handleRemoveOne(file, fileList) {
+                // console.log(file, fileList);
+                this.urlOne = [];
+            },
+
+            handleRemoveThree(file, fileList) {
+                // console.log("33333",file);
+                var arr = this.urlThree
+                var item = file.response.data.recId
+                for (var i = 0; i < arr.length; i++) {
+                    if (arr[i] == item) {
+                        arr.splice(i, 1);
+                        i--;
+                    }
+                }
+                this.urlThree = arr;
+            },
+
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+            },
+
+            handleAvatarSuccess(res, file) {
+                this.imageUrl = URL.createObjectURL(file.raw);
+            },
+
+            handlePictureCardSuccessOne(a, b, c) {
+                // console.log("图片一张上传成功",a)
+                this.urlOne.push(a.data.recId)
+
+            },
+
+            handlePictureCardSuccessThree(a, b, c) {
+                // console.log("图片3张上传成功",a)
+                this.urlThree.push(a.data.recId)
+            },
+            //图片上传方法结束
+            //以下是标签输入
+            handleClose(tag) {
+                this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+                this.ruleForm.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+            },
+
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(() => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
+            },
+
+            handleInputConfirm() {
+                let inputValue = this.inputValue;
+                if (inputValue) {
+                    this.dynamicTags.push(inputValue);
+                    this.ruleForm.dynamicTags.push(inputValue);
+                    console.log(this.ruleForm.dynamicTags)
+                }
+                this.inputVisible = false;
+                this.inputValue = '';
+            },
+
+            // 图片上传：
+            selectThree() {
+                this.choseOne = false
+                this.choseThree = true
+            },
+
+            selectOne() {
+                this.choseThree = false,
+                    this.choseOne = true
+            },
+            //以上是标签输入
+            handleClick(tab, event) {
+                console.log(tab, event);
+            },
+
+            onSubmit() {
+                console.log('submit!');
+            },
+
+            // 提交：
+            submitForm() {
+                this.$refs.ruleForm.validate((valid) => {
+                    if (valid) {
+                        if (this.tpId === "1012101") {
+                            if (this.ruleForm.textarea && this.dynamicTags && this.ruleForm.name && this.tpId) {
+                                var submitList = {
+                                    "content": this.ruleForm.textarea,
+                                    "newsStyle": this.tpId,
+                                    "tags": this.dynamicTags,
+                                    "title": this.ruleForm.name,
+                                    "newsClassifyIds": this.allSelect
+                                }
+                                newsArticelAdd(submitList).then(data => {
+                                    // console.log(data)
+                                    if (data.rtnCode == 1) {
+                                        this.$message({
+                                            message: '文章添加成功',
+                                            type: 'success'
+                                        });
+                                        this.$router.push('/nrgl')
+                                    } else {
+                                        this.$message({
+                                            message: '文章添加失败',
+                                            type: 'warning'
+                                        });
+                                    }
+                                })
+                            } else {
+                                this.$message({
+                                    message: '提交存在空值',
+                                    type: 'warning'
+                                });
+                            }
+                        } else if (this.tpId === "1012104") {
+                            if (this.ruleForm.textarea && this.dynamicTags && this.ruleForm.name && this.tpId && this.threeRecId.length >= 3) {
+                                if ( this.threeRecId.indexOf('') != -1) {
+                                    return this.$message({
+                                            message: '未上传图片!',
+                                            type: 'warning'
+                                         });
+                                }
+                                var submitList = {
+                                    "content": this.ruleForm.textarea,
+                                    "coverResIds": this.threeRecId,
+                                    "newsStyle": this.tpId,
+                                    "tags": this.dynamicTags,
+                                    "title": this.ruleForm.name,
+                                    // "tpId": this.tpId
+                                    "newsClassifyIds": this.allSelect
+                                }
+                                newsArticelAdd(submitList).then(data => {
+                                    // console.log(data)
+                                    if (data.rtnCode == 1) {
+                                        this.$message({
+                                            message: '文章添加成功',
+                                            type: 'success'
+                                        });
+                                        this.$router.push('/nrgl')
+                                    } else {
+                                        this.$message({
+                                            message: '文章添加失败',
+                                            type: 'warning'
+                                        });
+                                    }
+                                })
+                            } else {
+                                this.$message({
+                                    message: '未上传图片!',
+                                    type: 'warning'
+                                });
+                            }
+                        } else {
+                            if (this.ruleForm.textarea && this.dynamicTags && this.ruleForm.name && this.tpId && this.threeRecId.length >= 1) {
+                                var submitList = {
+                                    "content": this.ruleForm.textarea,
+                                    "coverResIds": this.threeRecId,
+                                    "newsStyle": this.tpId,
+                                    "tags": this.dynamicTags,
+                                    "title": this.ruleForm.name,
+                                    // "tpId": this.tpId
+                                    "newsClassifyIds": this.allSelect
+                                }
+                                newsArticelAdd(submitList).then(data => {
+                                    // console.log(data)
+                                    if (data.rtnCode == 1) {
+                                        this.$message({
+                                            message: '文章添加成功',
+                                            type: 'success'
+                                        });
+                                        this.$router.push('/nrgl')
+                                    } else {
+                                        this.$message({
+                                            message: '文章添加失败',
+                                            type: 'warning'
+                                        });
+                                    }
+                                })
+                            } else {
+                                this.$message({
+                                    message: '未上传图片!',
+                                    type: 'warning'
+                                });
+                            }
+                        }
+
+                    } else {
+                        return
+                    }
+                })
+
+
+                // if (this.tpId === "1012101") {
+                //     if (this.ruleForm.textarea && this.dynamicTags && this.ruleForm.name && this.tpId) {
+                //         var submitList = {
+                //             "content": this.ruleForm.textarea,
+                //             "newsStyle": this.tpId,
+                //             "tags": this.dynamicTags,
+                //             "title": this.ruleForm.name,
+                //             "newsClassifyIds": this.allSelect
+                //         }
+                //         newsArticelAdd(submitList).then(data => {
+                //             // console.log(data)
+                //             if (data.rtnCode == 1) {
+                //                 this.$message({
+                //                     message: '文章添加成功',
+                //                     type: 'success'
+                //                 });
+                //                 this.$router.push('/nrgl')
+                //             } else {
+                //                 this.$message({
+                //                     message: '文章添加失败',
+                //                     type: 'warning'
+                //                 });
+                //             }
+                //         })
+                //     } else {
+                //         this.$message({
+                //             message: '提交存在空值',
+                //             type: 'warning'
+                //         });
+                //     }
+                // } else {
+                //     if (this.ruleForm.textarea && this.dynamicTags && this.ruleForm.name && this.tpId) {
+                //         var submitList = {
+                //             "content": this.ruleForm.textarea,
+                //             "coverResIds": this.threeRecId,
+                //             "newsStyle": this.tpId,
+                //             "tags": this.dynamicTags,
+                //             "title": this.ruleForm.name,
+                //             // "tpId": this.tpId
+                //             "newsClassifyIds": this.allSelect
+                //         }
+                //         newsArticelAdd(submitList).then(data => {
+                //             // console.log(data)
+                //             if (data.rtnCode == 1) {
+                //                 this.$message({
+                //                     message: '文章添加成功',
+                //                     type: 'success'
+                //                 });
+                //                 this.$router.push('/nrgl')
+                //             } else {
+                //                 this.$message({
+                //                     message: '文章添加失败',
+                //                     type: 'warning'
+                //                 });
+                //             }
+                //         })
+                //     } else {
+                //         this.$message({
+                //             message: '提交存在空值',
+                //             type: 'warning'
+                //         });
+                //     }
+                //
+                // }
+
+            },
+            // 富文本编辑器：
+            onEditorReady(editor) { // 准备编辑器
+            },
+            onEditorBlur() {
+            }, // 失去焦点事件
+            onEditorFocus() {
+            }, // 获得焦点事件
+            onEditorChange() {
+            }, // 内容改变事件
+            back() {
+                window.history.back(-1);
+            }
+        },
+        components: {
+            commonHe,
+            VueCropper,
+            quillEditor
+        },
+        created() {
+            // tps().then(data=>{
+            //   // console.log(data)
+            //   this.tps=data.data
+            // })
+
+            this.editorOption = quillRedefine(
+                {
+                    // 图片上传的设置
+                    uploadConfig: {
+                        action: addUrl,  // 必填参数 图片上传地址
+                        res: (respnse) => {
+                            return respnse.data.url;//return图片url
+                        },
+                        name: 'file'  // 图片上传参数名
+                    },
+                    placeholder: '写点什么吧！',
+                }
+            )
+
+            // 文章分组：
+            var classifyList = {
+                "pageNum": 1,
+                "pageSize": 500
+            }
+            articleClassifies(classifyList).then(data => {
+                // console.log(data,"文章分组")
+                this.options = data.data
+            })
+
+
+            coverClassifies().then(data => {
+                console.log('封面类型', data)
+                this.tps = data.data
+            })
+
+            this.isShowMenu = localStorage.getItem("isShowMenu");
+
+            if (this.isShowMenu == undefined || this.isShowMenu != 0) {
+                this.isShowMenu = 1;
+            }
+        },
+
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+
+            if (this.isShowMenu == 0) {
+                document.getElementsByClassName("style-box")[0].style.left = 0;
+                document.getElementsByClassName("style-box")[0].style.top = 0;
+                document.getElementsByClassName("style-box")[0].style.height = "auto";
+                document.getElementsByClassName("style-box")[0].style.width = "100%";
+                document.getElementById("boxs").style.width = "100%";
+                document.getElementById("boxs").style.height = "auto"
+            }
+        }
+
+    }
+</script>
+<style lang="scss" scoped>
+  // 图片裁剪：
+
+
+  .content {
+    margin: auto;
+    max-width: 585px;
+    /*margin-bottom: 100px;*/
+  }
+
+  .test-button {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid #c0ccda;
+    color: #1f2d3d;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+    margin: 20px 10px 0px 0px;
+    padding: 9px 15px;
+    font-size: 14px;
+    border-radius: 4px;
+    color: #fff;
+    background-color: #50bfff;
+    border-color: #50bfff;
+    transition: all .2s ease;
+    text-decoration: none;
+    user-select: none;
+  }
+
+  .des {
+    line-height: 30px;
+  }
+
+  code.language-html {
+    padding: 10px 20px;
+    margin: 10px 0px;
+    display: block;
+    background-color: #333;
+    color: #fff;
+    overflow-x: auto;
+    font-family: Consolas, Monaco, Droid, Sans, Mono, Source, Code, Pro, Menlo, Lucida, Sans, Type, Writer, Ubuntu, Mono;
+    border-radius: 5px;
+    white-space: pre;
+  }
+
+  .show-info {
+    /*margin-bottom: 50px;*/
+  }
+
+  .show-info h2 {
+    line-height: 50px;
+  }
+
+  /*.title, .title:hover, .title-focus, .title:visited {
+        color: black;
+    }*/
+
+  .title {
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    line-height: 1.5;
+    margin: 20px 0px;
+    background-image: -webkit-linear-gradient(left, #3498db, #f47920 10%, #d71345 20%, #f7acbc 30%, #ffd400 40%, #3498db 50%, #f47920 60%, #d71345 70%, #f7acbc 80%, #ffd400 90%, #3498db);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-size: 200% 100%;
+    animation: slide 5s infinite linear;
+    font-size: 40px;
+  }
+
+  .test {
+    height: 285px;
+  }
+
+  .model {
+    position: fixed;
+    z-index: 10;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .model-show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .model img {
+    display: block;
+    margin: auto;
+    max-width: 80%;
+    user-select: none;
+    background-position: 0px 0px, 10px 10px;
+    background-size: 20px 20px;
+    background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%), linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
+  }
+
+  .c-item {
+    display: block;
+    padding: 10px 0;
+    user-select: none;
+  }
+
+  @keyframes slide {
+    0% {
+      background-position: 0 0;
+    }
+
+    100% {
+      background-position: -100% 0;
+    }
+  }
+
+  @media screen and (max-width: 1000px) {
+    .content {
+      max-width: 90%;
+      margin: auto;
+    }
+
+    .test {
+      height: 400px;
+    }
+  }
+
+
+  .defaultImg {
+    background-image: url("../../assets/images/nopic.png");
+  }
+
+
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
+</style>
+
+<style lang="scss">
+  .editor {
+    line-height: normal !important;
+  }
+
+  .ql-snow .ql-tooltip[data-mode=link]::before {
+    content: "请输入链接地址:";
+  }
+
+  .ql-snow .ql-tooltip.ql-editing a.ql-action::after {
+    border-right: 0px;
+    content: '保存';
+    padding-right: 0px;
+  }
+
+  .ql-snow .ql-tooltip[data-mode=video]::before {
+    content: "请输入视频地址:";
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item::before {
+    content: '14px';
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=small]::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
+    content: '10px';
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=large]::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {
+    content: '18px';
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=huge]::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {
+    content: '32px';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item::before {
+    content: '文本';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
+    content: '标题1';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
+    content: '标题2';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
+    content: '标题3';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
+    content: '标题4';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="5"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="5"]::before {
+    content: '标题5';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="6"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="6"]::before {
+    content: '标题6';
+  }
+
+  .ql-snow .ql-picker.ql-font .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-font .ql-picker-item::before {
+    content: '标准字体';
+  }
+
+  .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=serif]::before,
+  .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
+    content: '衬线字体';
+  }
+
+  .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=monospace]::before,
+  .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {
+    content: '等宽字体';
+  }
+
+  @import '../../styles/hxmstyle.css';
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    width: 260px;
+    padding-left: 40px;
+  }
+</style>

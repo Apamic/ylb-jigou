@@ -1,0 +1,805 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="style-box">
+      <div id="box">
+        <div class="zhenge">
+          <div class="baik">
+            <el-form :model="form" :rules="rules" ref="ruleForm" label-width="120px">
+              <el-form-item label="特色科室名称" prop="deptName">
+                <el-input v-model="form.deptName"></el-input>
+              </el-form-item>
+              <el-form-item label="联系电话" prop="phone">
+                <el-input v-model="form.phone"></el-input>
+              </el-form-item>
+              <el-form-item label="科室介绍图片">
+                <el-upload
+                  class="avatar-uploader shangchuan"
+                  :action="baseUrl"
+                  :show-file-list="false"
+                  :on-success="handleAvatarSuccess"
+                  :before-upload="beforeAvatarUpload">
+                  <img v-if="form.deptRecUrl" :src="form.deptRecUrl" class="avatar" width="150" height="150">
+                  <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
+                <div class="rightmiaoshu">建议尺寸750*560px或4：3，JPG、PNG格式， 图片小于5M。</div>
+              </el-form-item>
+              <el-form-item class="bianjiq" label="科室介绍">
+                <quill-editor
+                  v-model="form.desp"
+                  :options="editorOption"
+                >
+                </quill-editor>
+              </el-form-item>
+              <!-- <el-form-item class="bianjiq" label="科室介绍样式2">
+                    <el-upload
+                    class="avatar-uploader"
+                    :action="serverUrl"
+                    name="img"
+                    :headers="header"
+                    :show-file-list="false"
+                    :on-success="uploadSuccess"
+                    :on-error="uploadError"
+                    :before-upload="beforeUpload">
+                  </el-upload>
+
+                    <quill-editor
+                    class="editor"
+                    v-model="content"
+                    ref="myQuillEditor"
+                    :options="editorOption"
+                    @blur="onEditorBlur($event)" @focus="onEditorFocus($event)"
+                    @change="onEditorChange($event)">
+                    </quill-editor>
+              </el-form-item> -->
+              <el-form-item label="擅长疾病" class="scjbkuang2">
+                <el-button size="mini" type="primary" icon="el-icon-plus" @click="showTable('diseaseName')">擅长</el-button>
+                <el-tag
+                  :key="tag.diseaseId"
+                  v-for="tag in form.diseases"
+                  closable
+                  :disable-transitions="false"
+                  @close="handleClose(tag,form.diseases)">
+                  {{tag.nameCn}}
+                </el-tag>
+                <div class="rightmiaoshu">最多只能选6个标签</div>
+              </el-form-item>
+              <el-form-item label="科室成员" class="scjbkuang2">
+                <el-button size="mini" type="primary" icon="el-icon-plus" @click="showTable('nameCn')">成员</el-button>
+                <el-tag
+                  :key="tag.userId"
+                  v-for="tag in form.deptUsers"
+                  closable
+                  :disable-transitions="false"
+                  @close="handleClose(tag,form.deptUsers)">
+                  {{tag.nameCn}}
+                </el-tag>
+              </el-form-item>
+<!--              <el-form-item label="医疗服务包" class="scjbkuang2">-->
+<!--                <el-button size="mini" type="primary" icon="el-icon-plus" @click="showTable('servName',getServChooseNo())">服务</el-button>-->
+<!--                <el-tag-->
+<!--                  :key="tag.servId"-->
+<!--                  v-for="tag in form.services"-->
+<!--                  closable-->
+<!--                  :disable-transitions="false"-->
+<!--                  @close="handleClose(tag,form.services)">-->
+<!--                  {{tag.servName}}-->
+<!--                </el-tag>-->
+<!--              </el-form-item>-->
+              <el-form-item>
+                <el-button type="primary"  v-if="deptId != 0" @click="onSubmit('ruleForm')">确定保存</el-button>
+                <el-button type="primary" v-if="deptId == 0" @click="onAddSub('ruleForm')">确定添加</el-button>
+                <el-button @click="$router.go(-1)">取消</el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+
+          <el-dialog title="添加标签" :visible.sync="dialogTableVisible">
+            <div style="width: 300px;" v-if="showTab == 'diseaseName'">
+              <el-input placeholder="请输入擅长疾病关键字" v-model="diseaseName" class="input-with-select" size="mini">
+                <el-button slot="append" icon="el-icon-search"></el-button>
+              </el-input>
+            </div>
+            <div style="width: 300px;" v-if="showTab == 'nameCn'">
+              <el-input placeholder="请输入成员关键字" v-model="nameCn" class="input-with-select" size="mini">
+                <el-button slot="append" icon="el-icon-search"></el-button>
+              </el-input>
+            </div>
+            <div style="width: 300px;" v-if="showTab == 'servName'">
+              <el-input placeholder="请输入服务关键字" v-model="servName" class="input-with-select" size="mini">
+                <el-button slot="append" icon="el-icon-search"></el-button>
+              </el-input>
+            </div>
+            <el-table :data="list" size="mini">
+              <el-table-column type="index" label="#" width="150px"></el-table-column>
+              <el-table-column v-if="showTab == 'diseaseName'" property="nameCn" label="疾病"></el-table-column>
+              <el-table-column v-if="showTab == 'nameCn'" property="nameCn" label="成员"></el-table-column>
+              <el-table-column v-if="showTab == 'servName'" property="servName" label="服务"></el-table-column>
+              <el-table-column label="操作" width="150px">
+                <template slot-scope="scope">
+<!--                  <el-button size="mini" type="text" v-if="arr.indexOf(scope.row) != -1" >已添加</el-button>-->
+                  <el-button size="mini" type="text" v-if="scope.row.pit" >已添加</el-button>
+                  <el-button size="mini" type="text" v-else @click="additem(scope.row) ">添加</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div style="display: flex;justify-content: flex-end; padding-top: 10px;">
+              <el-pagination
+                @current-change="handleCurrentChange"
+                :current-page="pageNum"
+                :page-size="10"
+                layout="total,prev, pager, next, jumper"
+                :total="total">
+              </el-pagination>
+            </div>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogTableVisible = false">关闭</el-button>
+<!--              <el-button type="primary" @click="addTable()">确 定</el-button>-->
+            </div>
+          </el-dialog>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+    import {addTsDept} from '../../api/api'
+    import baseUrl from '@/api/base.js'
+    //富编辑器样式2
+    // 工具栏配置
+    const toolbarOptions = [
+        ["bold", "italic", "underline", "strike"], // 加粗 斜体 下划线 删除线
+        ["blockquote", "code-block"], // 引用  代码块
+        [{header: 1}, {header: 2}], // 1、2 级标题
+        [{list: "ordered"}, {list: "bullet"}], // 有序、无序列表
+        [{script: "sub"}, {script: "super"}], // 上标/下标
+        [{indent: "-1"}, {indent: "+1"}], // 缩进
+        // [{'direction': 'rtl'}],                         // 文本方向
+        [{size: ["small", false, "large", "huge"]}], // 字体大小
+        [{header: [1, 2, 3, 4, 5, 6, false]}], // 标题
+        [{color: []}, {background: []}], // 字体颜色、字体背景颜色
+        [{font: []}], // 字体种类
+        [{align: []}], // 对齐方式
+        ["clean"], // 清除文本格式
+        //["link", "image", "video"] // 链接、图片、视频
+    ];
+
+    import {quillEditor} from "vue-quill-editor";
+    import "quill/dist/quill.core.css";
+    import "quill/dist/quill.snow.css";
+    import "quill/dist/quill.bubble.css";
+
+
+    import commonHe from '../../components/commonHe'
+
+    export default {
+        //以下是富编辑器样式2相关
+        props: {
+            /*编辑器的内容*/
+            value: {
+                type: String
+            },
+            /*图片大小*/
+            maxSize: {
+                type: Number,
+                default: 4000 //kb
+            }
+        },
+        components: {
+            quillEditor
+        },
+        //以上是富编辑器样式2相关
+        name: 'NewsCreate',
+        data() {
+            return {
+                deptId: '',
+
+                baseUrl: '',
+
+                form: {
+                    deptId: '',
+                    deptName: '',
+                    deptRecId: '',
+                    deptRecUrl: '',
+                    desp: '',
+                    phone: '',
+                    deptUsers: [],
+                    diseases: [],
+                    services: [],
+                },
+
+                diseaseName: '',
+                servName: '',
+                nameCn: '',
+
+                showTab: '',
+
+                list: [],
+
+                arr: [],
+
+                dialogTableVisible: false,
+
+                rules: {
+                    deptName: [
+                        { required: true, message: '请输入特色科室名称', trigger: ['blur','change']},
+                    ],
+                },
+
+                total: 10,
+                pageNum: 1,
+
+                //以下是富编辑器2相关
+                content: this.value,
+                quillUpdateImg: false, // 根据图片上传状态来确定是否显示loading动画，刚开始是false,不显示
+                editorOption: {
+                    // placeholder: "",
+                    theme: "snow", // or 'bubble'
+                    placeholder: "介绍下特色科室的亮点吧！",
+                    modules: {
+                        toolbar: {
+                            container: toolbarOptions,
+                            // container: "#toolbar",
+                            handlers: {
+                                image: function (value) {
+                                    if (value) {
+                                        // 触发input框选择图片文件
+                                        document.querySelector(".avatar-uploader input").click();
+                                    } else {
+                                        this.quill.format("image", false);
+                                    }
+                                },
+                                // link: function(value) {
+                                //   if (value) {
+                                //     var href = prompt('请输入url');
+                                //     this.quill.format("link", href);
+                                //   } else {
+                                //     this.quill.format("link", false);
+                                //   }
+                                // },
+                            }
+                        }
+                    }
+                },
+                serverUrl: "/v1/blog/imgUpload", // 这里写你要上传的图片服务器地址
+                header: {
+                    // token: sessionStorage.token
+                },// 有的图片服务器要求请求头需要有token
+                //以上是富编辑器2相关
+            };
+        },
+
+        watch: {
+            'diseaseName'() {
+                this.pageNum = 1
+                this.getDiseaseChooseNo()
+            },
+
+            'nameCn'() {
+                this.pageNum = 1
+                this.getMemberChooseNo()
+            },
+
+            'servName'() {
+                this.pageNum = 1
+                this.getServChooseNo()
+            }
+
+        },
+
+        created() {
+            this.deptId = this.$route.query.deptId
+
+            if (this.deptId != 0) {
+                this.getDeptetail()
+            }
+            this.baseUrl = baseUrl + 'upload/res'
+
+            // console.log(this.deptId)
+        },
+        methods: {
+
+            handleCurrentChange(val) {
+                this.pageNum = val
+
+                if (this.showTab == 'diseaseName') {
+                    this.getDiseaseChooseNo()
+                } else if (this.showTab == 'nameCn') {
+                    this.getMemberChooseNo()
+                } else if (this.showTab = 'servName') {
+                    this.getServChooseNo()
+                }
+
+            },
+
+            onAddSub(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.$axios({
+                            url: 'dept/add',
+                            method: 'post',
+                            data: this.form
+                        }).then(res => {
+                            this.$router.go(-1)
+                            // console.log('add',res.data)
+                        })
+                    } else {
+                        // console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+
+            showTable(name) {
+                this.diseaseName = ''
+                this.servName = ''
+                this.nameCn = ''
+                this.dialogTableVisible = true
+                this.arr = []
+                this.showTab = name
+                this.pageNum = 1
+                if (this.showTab == 'diseaseName') {
+                    this.getDiseaseChooseNo()
+                } else if (this.showTab == 'nameCn') {
+                    this.getMemberChooseNo()
+                } else if (this.showTab = 'servName') {
+                    this.getServChooseNo()
+                }
+
+            },
+
+            additem(tag) {
+
+                if (this.showTab == 'diseaseName') {
+
+                    if (this.form.diseases == null) {
+                        this.form.diseases = []
+                    }
+
+                    if (this.form.diseases.length >= 6) {
+                        return this.$message('最多只能选6个标签')
+                    }
+
+                    this.form.diseases.push(tag)
+                    this.setSelected(this.list,this.form.diseases)
+                }
+
+                if (this.showTab == 'nameCn') {
+                    let obj = {
+                        userId: tag.drId,
+                        nameCn: tag.nameCn
+                    }
+
+                    if (this.form.deptUsers == null) {
+                        this.form.deptUsers = []
+                    }
+
+                    this.form.deptUsers.push(obj)
+                    this.setSelected(this.list,this.form.deptUsers)
+                }
+
+                if (this.showTab == 'servName') {
+
+                    if (this.form.services == null) {
+                        this.form.services = []
+                    }
+
+                    this.form.services.push(tag)
+                    this.setSelected(this.list,this.form.services)
+                }
+
+            },
+
+            addTable() {
+                if (this.showTab == 'diseaseName') {
+
+                    if (this.form.diseases == null) {
+                        this.form.diseases = []
+                    }
+
+                    this.form.diseases.push(...this.arr)
+                    if (this.form.diseases.length > 5) {
+                        let count = this.form.diseases.length - 5
+                        for (let i = 0;(i + 1) < count;i++) {
+                            this.form.diseases.splice(i,1)
+                        }
+                    }
+                    this.diseaseName = ''
+                }
+
+                if (this.showTab == 'nameCn') {
+                    console.log(this.form.deptUsers)
+
+                    if (this.form.deptUsers == null) {
+                        this.form.deptUsers = []
+                    }
+
+                    this.arr.forEach(item => {
+                        let obj = {
+                            userId: item.drId,
+                            nameCn: item.nameCn
+                        }
+                        this.form.deptUsers.push(obj)
+                    })
+                    this.nameCn = ''
+                }
+
+                if (this.showTab == 'servName') {
+
+                    if (this.form.services == null) {
+                        this.form.services = []
+                    }
+
+                    this.form.services.push(...this.arr)
+                    this.servName = ''
+                }
+                this.arr = []
+                this.dialogTableVisible = false
+            },
+
+            getDeptetail() {
+                this.$axios({
+                    url: 'dept/detail',
+                    method: 'post',
+                    data: {
+                        deptId: this.deptId,
+                    }
+                }).then(res => {
+                    this.form = res.data.data
+                    console.log(res.data.data)
+                })
+            },
+
+            getDiseaseChooseNo() {
+                this.$axios({
+                    url: 'dept/disease/choose/no',
+                    method: 'post',
+                    data: {
+                        charaDeptId: this.deptId,
+                        diseaseName: this.diseaseName,
+                        pageNum: this.pageNum,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    this.list = res.data.data
+                    this.total = res.data.total
+                    this.setSelected(this.list,this.form.diseases)
+                    // console.log('diseaseName',res)
+                })
+            },
+
+            getMemberChooseNo() {
+                this.$axios({
+                    url: 'dept/member/choose/no',
+                    method: 'post',
+                    data: {
+                        charaDeptId: this.deptId,
+                        nameCn: this.nameCn,
+                        pageNum: this.pageNum,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    this.list = res.data.data
+                    this.total = res.data.total
+                    if (this.form.deptUsers == null) {
+                        this.form.deptUsers = []
+                    }
+
+                    this.setSelected(this.list,this.form.deptUsers)
+                    // console.log('Member',res)
+                })
+            },
+
+            getServChooseNo() {
+                this.$axios({
+                    url: 'dept/serv/choose/no',
+                    method: 'post',
+                    data: {
+                        charaDeptId: this.deptId,
+                        servName: this.servName,
+                        pageNum: this.pageNum,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    this.list = res.data.data
+                    this.total = res.data.total
+                    if (this.form.services == null) {
+                        this.form.services = []
+                    }
+                    this.setSelected(this.list,this.form.services)
+                    // console.log('service',res)
+                })
+            },
+
+            setSelected(list,arr) {
+                arr.forEach(item => {
+                    list.forEach(items => {
+                        if (item.diseaseId) {
+                            if (item.diseaseId == items.diseaseId) {
+                                this.$set(items,'pit',true)
+                            }
+                        }
+
+                        if (item.userId) {
+                            if (item.userId== items.drId) {
+                                this.$set(items,'pit',true)
+                            }
+                        }
+
+                        if (item.servName) {
+                            if (item.servName == items.servName) {
+                                this.$set(items,'pit',true)
+                            }
+                        }
+
+                    })
+                })
+                // console.log(list,arr)
+            },
+
+            handleClose(tag,arr) {
+                arr.splice(arr.indexOf(tag),1)
+                console.log(arr)
+            },
+
+            //以下是富编辑器2相关
+            onEditorBlur() {
+                //失去焦点事件
+            },
+
+            onEditorFocus() {
+                //获得焦点事件
+            },
+
+            onEditorChange() {
+                //内容改变事件
+                this.$emit("input", this.content);
+            },
+
+            // 富文本图片上传前
+            beforeUpload() {
+                // 显示loading动画
+                this.quillUpdateImg = true;
+            },
+
+            uploadSuccess(res, file) {
+                // res为图片服务器返回的数据
+                // 获取富文本组件实例
+                let quill = this.$refs.myQuillEditor.quill;
+                // 如果上传成功
+                if (res.code == 200) {
+                    // 获取光标所在位置
+                    let length = quill.getSelection().index;
+                    // 插入图片  res.url为服务器返回的图片地址
+                    quill.insertEmbed(length, "image", res.url);
+                    // 调整光标到最后
+                    quill.setSelection(length + 1);
+                } else {
+                    this.$message.error("图片插入失败");
+                }
+                // loading动画消失
+                this.quillUpdateImg = false;
+            },
+            // 富文本图片上传失败
+            uploadError() {
+                // loading动画消失
+                this.quillUpdateImg = false;
+                this.$message.error("图片插入失败");
+            },
+            //以上是富编辑器2相关
+
+            //身份证上传方法开始
+            handleAvatarSuccess(res, file) {
+                // console.log(res)
+                this.form.deptRecId = res.data.recId
+                console.log(this.form.deptRecId)
+                this.form.deptRecUrl = URL.createObjectURL(file.raw);
+            },
+
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isPNG = file.type === 'image/png';
+                const isLt2M = file.size / 1024 / 1024 < 5;
+
+                if (!isJPG && !isPNG) {
+                    this.$message.error('上传头像图片只能是 JPG,PNG 格式!');
+                    return isJPG && isPNG
+                }
+
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 5MB!');
+                    return isLt2M
+                }
+            },
+            //身份证上传方法结束
+            //医生头像方法开始
+            handleRemove(file) {
+                console.log(file);
+            },
+
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+            },
+
+            handleDownload(file) {
+                console.log(file);
+            },
+            //医生头像方法结束
+            submitForm(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        alert('submit!');
+                    } else {
+                        console.log('error submit!!');
+
+                        return false;
+                    }
+                });
+            },
+
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            },
+
+            onSubmit(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.form.deptId = this.deptId
+                        this.$axios({
+                            url: 'dept/update',
+                            method: 'post',
+                            data: this.form
+                        }).then(res => {
+                            this.$router.go(-1)
+                            console.log(this.form.deptRecId)
+                        })
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+
+            submitForm(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        alert('submit!');
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            }
+        },
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+        },
+        components: {
+            commonHe
+        },
+    };
+</script>
+<style lang="scss">
+  .editor {
+    line-height: normal !important;
+  }
+
+  .ql-snow .ql-tooltip[data-mode=link]::before {
+    content: "请输入链接地址:";
+  }
+
+  .ql-snow .ql-tooltip.ql-editing a.ql-action::after {
+    border-right: 0px;
+    content: '保存';
+    padding-right: 0px;
+  }
+
+  .ql-snow .ql-tooltip[data-mode=video]::before {
+    content: "请输入视频地址:";
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item::before {
+    content: '14px';
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=small]::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
+    content: '10px';
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=large]::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {
+    content: '18px';
+  }
+
+  .ql-snow .ql-picker.ql-size .ql-picker-label[data-value=huge]::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {
+    content: '32px';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item::before {
+    content: '文本';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
+    content: '标题1';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
+    content: '标题2';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
+    content: '标题3';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
+    content: '标题4';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="5"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="5"]::before {
+    content: '标题5';
+  }
+
+  .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="6"]::before,
+  .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="6"]::before {
+    content: '标题6';
+  }
+
+  .ql-snow .ql-picker.ql-font .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-font .ql-picker-item::before {
+    content: '标准字体';
+  }
+
+  .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=serif]::before,
+  .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
+    content: '衬线字体';
+  }
+
+  .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=monospace]::before,
+  .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {
+    content: '等宽字体';
+  }
+
+  @import '../../styles/hxmstyle.css';
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    width: 260px;
+    padding-left: 40px;
+  }
+
+
+</style>

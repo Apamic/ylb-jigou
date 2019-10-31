@@ -1,0 +1,534 @@
+<template>
+    <div>
+      <commonHe v-if="isShowMenu == 1"></commonHe>
+        <div class="style-box">
+            <div  id="box">
+                <div class="zhenge">
+                    <!-- 编辑弹窗： -->
+                    <el-dialog title="修改分组名称" :visible.sync="alertEditVisible" class="group_dialog">
+                        <el-form >
+                            <el-form-item label="分组名称" :label-width="formLabelWidth">
+                                <el-input v-model="editGroupName" autocomplete="off" style="width:99%;"></el-input>
+                            </el-form-item>
+                        </el-form>
+                        <div slot="footer" class="dialog-footer" style="margin-top:-100px;position:relative;">
+                            <el-button @click="alertEditVisible = false" style="position: absolute;right:80px;">取 消</el-button>
+                            <el-button type="primary" @click="groupEditSure" style="position: absolute;right:0;">确 定</el-button>
+                        </div>
+                    </el-dialog>
+                    <!-- 完 -->
+
+
+                    <div class="yggl-ym">
+                        <div class="tishikuang tishikuang2" style="position:relative">
+                            <div class="tishikz">
+                                <h2>{{listData.classifyName}}</h2>
+                                <p>创建时间: <span>{{listData.timeCreate}}</span></p>
+                            </div>
+                            <div class="tishiky" style="position:absolute;z-index:100;right:20px">
+                                <el-button @click="editArticel" type="text" size="small">编辑</el-button>
+                                <el-button @click="deleteGroup" type="text" size="small">删除</el-button>
+                                <el-button @click="groupList" type="text" size="small">返回</el-button>
+                            </div>
+                        </div>
+                                <el-row class="tou-btn">
+                                    <div class="xuanzhong-btn">
+                                        <el-button type="text" @click="addArticel">
+                                            <div class="xuanzhong-btn" style="margin-top:85px">添加文章</div>
+                                        </el-button>   
+                                    </div>
+                                    <div class="sousuo1">
+                                        <el-input v-model="formInline.user" placeholder="请输入文章标题"></el-input>
+                                        <el-button type="primary" @click="preAddarticelSearch">搜索</el-button>
+                                    </div>  
+                                </el-row>
+                                <!--添加文章弹出框  开始--------------------------------------->
+                                <div class="tanckbig">
+                                    <el-dialog title="添加文章" :visible.sync="dialogFormVisible">
+                                        <div  style="width:100%;">
+                                            <el-input v-model="addSearchInput" placeholder="请输入文章标题" style="width:60%"  class="input-with-select">
+  
+                                            </el-input>
+                                             <el-button style="width:130px;margin-top:5px" type="primary" size="medium" @click="addSearch">搜索</el-button>
+                                        </div>
+                                        <div class="hxmbiaoge2">
+                                            <el-table ref="multipleTable" :data="preArticel"  tooltip-effect="dark"
+                                            style="width: 100%" >
+                                                <el-table-column  type="selection"  width="30">
+                                                    <template slot-scope="scope" >
+                                                        <el-checkbox-group v-model="checkList" >
+                                                            <el-checkbox :label="scope.row.newsId">&nbsp</el-checkbox>
+                                                        </el-checkbox-group >
+                                                    </template>
+                                                </el-table-column>
+                                                <el-table-column  label="文章名称" >
+                                                    <span slot-scope="scope">
+                                                        {{scope.row.title}}
+                                                    </span>
+                                                </el-table-column>
+                                                <el-table-column  label="发布时间" width="160px">
+                                                    <span slot-scope="scope">
+                                                        {{scope.row.timePublish}}
+                                                    </span>
+                                                </el-table-column>
+                                            </el-table>
+                                        </div>
+                                        <div slot="footer" class="dialog-footer">
+                                            <el-button @click="dialogFormVisible = false">取 消</el-button>
+                                            <el-button type="primary" @click="addArticelSure">确 定</el-button>
+                                        </div>  
+                                    </el-dialog>
+                                </div>
+                                <!--弹出框  结束-------------------------------------->
+
+
+
+
+
+                        <div class="hxmbiaoge2">
+                            <el-table ref="multipleTable" :data="tableData7"  tooltip-effect="dark"
+                            style="width: 100%" >
+                                <el-table-column label="排序"  width="50" >
+                                    <span slot-scope="scope">{{scope.row.sort}}</span>
+                                </el-table-column>
+                                <el-table-column prop="name"  label="文章标题" >
+                                    <span slot-scope="scope">{{scope.row.title}}</span>
+                                </el-table-column>
+                                <el-table-column prop="name"  label="文章分类" width="100">
+                                    <span slot-scope="scope">{{scope.row.tpName}}</span>
+
+                                </el-table-column>
+                                <el-table-column prop="name"  label="状态" width="100">
+                                    <span slot-scope="scope">{{scope.row.statusName}}</span>
+                                </el-table-column>
+                                <el-table-column  label="操作" width="220">  
+                                    <template slot-scope="scope">
+                                        <el-button type="text" size="small" @click="goSort(scope.row.newsId)">排序</el-button>
+                                        <el-button
+                                            @click="articelRemove(scope.row.newsId)"
+                                            type="text"
+                                            size="small">
+                                            移出分组
+                                        </el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
+                </div>
+            </div>    
+        </div> 
+    </div>
+</template>
+
+<script>
+import {newsClassifies} from '../../api/api'
+import commonHe from '../../components/commonHe'
+// 文章分组编辑：
+import {newsClassifiesUpdate} from '../../api/api'
+// 删除：
+import {newsClassifiesDelete} from '../../api/api'
+// 分组内文章列表：
+import {newsClassifiesHas} from '../../api/api'
+// 待添加文章列表：
+import {newsClassifiesAll} from '../../api/api'
+// 移出分组：
+import {newsClassifiesRemove} from '../../api/api'
+// 文章确认添加：
+import {prenewsClassifiesAdd} from '../../api/api'
+// 排序：
+import {prenewsClassifiesSort} from '../../api/api'
+
+export default {
+    data(){
+        return{
+          isShowMenu : 1,
+            newsId:[],
+            // 排序：
+            sort:'',
+            // 添加选中：
+            checkList:[],
+            // 添加搜索输入：
+            addSearchInput:'',
+        formLabelWidth: '120px',
+        alertVisible:false,
+        groupName:'',
+
+        // 待添加分组文章：
+        preArticel:[],
+
+        // 编辑弹窗：
+        alertEditVisible:false,
+        editGroupName:'',
+
+        // 分组信息
+        listData:'',
+        dialogFormVisible: false,
+         tableData8:[
+        {
+         name:'这里是文章名称',
+         date:'2019-02-12 13:12:01',
+        
+        },
+        {
+         name:'这里是文章名称2',
+         date:'2019-02-12 13:12:01',
+        }
+        ],
+            tableData7:
+        [
+        {
+         name:'儿科专家',
+         num1:'8',
+         date:'2018-12-23 12:23:12',
+        },
+        {
+         name:'名医医生',
+         num1:'6',
+         date:'2018-12-23 12:23:12',
+        }
+        ],
+        formInline: {
+          user: '',
+          region: ''
+        },
+        };
+    },
+    methods: {
+        // 删除按钮:
+        deleteGroup(){
+            this.$confirm('此操作将删除该分组, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+            var classifyIdList={
+                "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId
+            }
+            newsClassifiesDelete(classifyIdList).then(data=>{
+                console.log(data)
+                if(data.rtnCode==1){
+                        this.$message({
+                        type: 'success',
+                        message: '删除成功!'
+                    });
+                }else{
+                    this.$message({
+                        type: 'info',
+                        message: '删除失败'
+                    }); 
+                }
+            })
+        
+        }).catch(() => {
+            this.$message({
+                type: 'info',
+                message: '已取消删除'
+          });          
+        });
+
+        },
+        // 添加文章：
+        addArticel(){
+            this.dialogFormVisible = true
+            // console.log("1111")
+            var preAddList={
+              "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+              "pageNum": 1,
+              "pageSize": 5
+            }
+            newsClassifiesAll(preAddList).then(data=>{
+                console.log(data,"待添加文章分组")
+                this.preArticel=data.data
+            })
+
+        },
+      groupList(){
+          window.history.back(-1);
+      },
+        // 添加文章搜索按钮：
+        addSearch(){
+            var preAddList={
+              "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+              "pageNum": 1,
+              "pageSize": 5,
+              "title":this.addSearchInput,
+            }
+            newsClassifiesAll(preAddList).then(data=>{
+                this.preArticel=data.data
+            })
+            // console.log(this.checkList)
+        },
+        // 确认添加：
+        addArticelSure(){
+            // this.dialogFormVisible = false
+            console.log(this.checkList)
+            var sureAddList={
+                "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+                "newsIds": this.checkList
+            }
+            prenewsClassifiesAdd(sureAddList).then(data=>{
+                console.log(data)
+                if(data.rtnCode==1){
+                    this.$message({
+                      type: 'success',
+                      message: "文章添加成功"
+                }); 
+                var preAddList={
+                  "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+                  "pageNum": 1,
+                  "pageSize": 5,
+                  "title":this.addSearchInput,
+                }
+                newsClassifiesAll(preAddList).then(data=>{
+                    this.preArticel=data.data
+                })
+                var hasList={
+                      "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+                      "pageNum": 1,
+                      "pageSize": 10
+                    }
+                newsClassifiesHas(hasList).then(data=>{
+                    this.tableData7=data.data;
+                    console.log("分组内文章列表",data)
+
+                })  
+                this.dialogFormVisible=false
+                }
+            })
+
+
+        },
+        // 搜索：
+        preAddarticelSearch(){
+            // alert(this.formInline.user)
+            var hasList={
+              "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+              "pageNum": 1,
+              "pageSize": 10,
+              "title":this.formInline.user
+            }
+            newsClassifiesHas(hasList).then(data=>{
+                this.tableData7=data.data;
+                console.log("分组内文章列表",data)
+
+            })
+        },
+        // 排序：
+        goSort(newsId){
+            this.$prompt('请输入排序序号，仅数字', '排序', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                inputPattern: '',
+                inputErrorMessage: '输入格式不正确'
+            }).then(({ value }) => {
+                this.sort=value
+                // alert(this.sort)
+                var sortList={
+                  "classifyId":JSON.parse(localStorage.getItem("groupContent")).classifyId,
+                  "newsId": newsId,
+                  "sortNo": value
+                }
+                prenewsClassifiesSort(sortList).then(data=>{
+                    console.log("排序操作",data)
+                    if(data.rtnCode==1){
+                        this.$message({
+                        type: 'success',
+                        message: "排序操作成功"
+                    }); 
+                    var hasList={
+                      "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+                      "pageNum": 1,
+                      "pageSize": 10,
+                      "title":this.formInline.user
+                    }
+                    newsClassifiesHas(hasList).then(data=>{
+                        this.tableData7=data.data;
+                        // console.log("分组内文章列表",data)
+        
+                    })
+                
+                    }
+                })
+            }).catch(() => {
+              this.$message({
+                type: 'info',
+                message: '取消输入'
+              });       
+            });
+
+        },
+
+        // 移出分组：
+        articelRemove(newsId){
+            this.$confirm('此操作将移出该分组, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+            this.newsId.push(newsId)
+            var removeList={
+              "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+              "newsIds": this.newsId
+            }
+            newsClassifiesRemove(removeList).then(data=>{
+                if(data.rtnCode==1){
+                    this.$message({
+                        type: 'success',
+                        message: "移出成功"
+                    }); 
+                    this.newsId=[]
+                    var hasList={
+                      "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+                      "pageNum": 1,
+                      "pageSize": 10,
+                      "title":this.formInline.user
+                    }
+                    newsClassifiesHas(hasList).then(data=>{
+                        this.tableData7=data.data;
+                        // console.log("分组内文章列表",data)
+        
+                    })
+
+
+
+
+
+                }
+            })
+        
+        }).catch(() => {
+            this.$message({
+                type: 'info',
+                message: '已取消移出分组'
+          });          
+        });
+
+
+
+
+
+
+
+
+
+            // alert(a)
+            
+
+
+        },
+
+
+
+        deleteRow(index, rows) {
+        rows.splice(index, 1);
+      },
+       onSubmit() {
+        console.log('submit!');
+      },
+     
+      handleNodeClick(data) {
+        console.log(data);
+      },
+        // 分组编辑：
+        editArticel(){ 
+        this.alertEditVisible=true    
+    },
+    groupEditSure(){
+        if(this.editGroupName){
+            var groupAddList={
+                "classifyName":this.editGroupName,
+                "classifyId": this.listData.classifyId
+            }
+            newsClassifiesUpdate(groupAddList).then(data=>{
+                if(data.rtnCode==1){
+                    this.alertEditVisible=false
+                    this.$message({
+                        type: 'success',
+                        message: '分组修改成功!'
+                    });
+                    this.listData.classifyName=this.editGroupName
+                    
+                    this.editGroupName='';
+                }
+                console.log(data)
+            })
+
+        }else{
+            this.$message({
+                type: 'info',
+                message: '分组名称不能为空!'
+            });
+        }
+    },
+    // 添加文章：
+
+
+     
+    },
+    components:{
+        commonHe
+    },
+    created(){
+        this.userId=localStorage.getItem("userId")
+        this.listData=JSON.parse(localStorage.getItem("groupContent")) 
+        console.log("listdata",this.listData)
+
+
+        // 列表：
+        var hasList={
+              "classifyId": JSON.parse(localStorage.getItem("groupContent")).classifyId,
+              "pageNum": 1,
+              "pageSize": 10
+            }
+        newsClassifiesHas(hasList).then(data=>{
+            this.tableData7=data.data;
+            console.log("分组内文章列表",data)
+
+        })
+
+      this.isShowMenu = localStorage.getItem("isShowMenu");
+
+      if(this.isShowMenu == undefined || this.isShowMenu != 0){
+        this.isShowMenu = 1;
+      }
+    },
+    mounted(){
+        let w=window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+        let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+        document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+        document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+        document.getElementById("box").style.width = (w - 280) + "px";
+        document.getElementById("box").style.height = (h - 120) + "px";
+
+      if(this.isShowMenu == 0){
+        document.getElementsByClassName("style-box")[0].style.left = 0;
+        document.getElementsByClassName("style-box")[0].style.top = 0;
+        document.getElementsByClassName("style-box")[0].style.height = "auto";
+        document.getElementsByClassName("style-box")[0].style.width = "100%";
+        document.getElementById("boxs").style.width = "100%";
+        document.getElementById("boxs").style.height = "auto"
+      }
+    }
+
+}
+</script>
+<style lang="scss">
+ @import '../../styles/hxmstyle.css';
+ $left-width:300px;
+.style-box{
+    background:rgba(245,245,245,1);
+    position: absolute;
+    left:200px;
+    top:68px;
+    overflow-y: auto;
+}
+.xjks-k .el-dialog__footer{background:#fff; width:100%; float:left;}
+.xjks-k .dialog-footer{ margin:auto; width:260px;   padding-left: 40px;}
+
+ .group_dialog .el-dialog{height:196px !important;}
+ .group_dialog .el-dialog__body{padding:20px !important;}
+
+ .group_dialog .el-button--mini{border-radius: 0 !important;}
+ .el-dialog__body{padding:0 !important;height:calc(100% - 55px) !important;}
+ </style>

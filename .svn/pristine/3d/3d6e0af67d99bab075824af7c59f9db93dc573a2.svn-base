@@ -1,0 +1,379 @@
+<template>
+    <div>
+      <commonHe></commonHe>
+      <div class="style-box">
+        <div id="box">
+          <div class="zhenge">
+            <div class="yggl-ym yyglsz-ym">
+              <div class="yyglsz-t">
+                <div>
+                  <el-button type="primary" @click="dialogTableVisible=true">添加人员</el-button>
+<!--                  <el-button class="mrbtn" @click="onDelete()">删除</el-button>-->
+                  <!--              <el-button class="mrbtn">排序</el-button>-->
+                </div>
+                <div class="keshissk">
+                  <el-input placeholder="请输入内容" v-model="input3" class="input-with-select">
+                    <el-button slot="append" @click="pageNum = 1,getDoctorClassifyDoctorHas()">搜索</el-button>
+                  </el-input>
+                </div>
+              </div>
+              <div class="yyglsz-table">
+                <el-table
+                  :data="list" style="width: 100%"
+                >
+<!--                  <el-table-column-->
+<!--                    type="selection"-->
+<!--                    width="55">-->
+<!--                  </el-table-column>-->
+                  <el-table-column prop="nameCn" label="姓名">
+                  </el-table-column>
+                  <el-table-column prop="officeTypeName" label="行政级别">
+                  </el-table-column>
+                  <el-table-column prop="deptName" label="科室">
+                  </el-table-column>
+                  <el-table-column prop="titlesName" label="职称">
+                  </el-table-column>
+                  <el-table-column label="操作" width="150">
+                    <template slot-scope="scope">
+                      <!--                    <el-button type="text" size="small">编辑</el-button>-->
+                      <el-button type="text" size="small" @click="sortShow = true,drId = scope.row.drId">排序</el-button>
+                      <el-button type="text" size="small" @click="onShareShow(scope.row)">分享</el-button>
+                      <el-button type="text" size="small" @click="onDelete(scope.row)">移出</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <div style="display: flex;justify-content: flex-end;padding: 20px 0 10px;">
+                  <el-pagination background layout="total, prev, pager, next"
+                                 :total="total"
+                                 :page-size="10"
+                                 @current-change="handleCurrentChange"
+                  >
+                  </el-pagination>
+                </div>
+              </div>
+
+              <div>
+                <el-dialog title="添加人员" :visible.sync="dialogTableVisible">
+                  <div style="margin-bottom: 10px;width: 350px;">
+                    <el-input placeholder="姓名/昵称/ID" v-model="queryLimit" class="input-with-select" size="mini">
+                      <span slot="prepend">医生:</span>
+                      <el-button slot="append" icon="el-icon-search" @click="pageNumAll = 1,getClassifyDoctorAll()"></el-button>
+                    </el-input>
+                  </div>
+                  <el-table :data="table" size="mini">
+                    <el-table-column property="drId" label="医生编号" width="200"></el-table-column>
+                    <el-table-column property="nameCn" label="姓名" width="150"></el-table-column>
+                    <el-table-column property="officeTypeName" label="行政级别" width="200"></el-table-column>
+                    <el-table-column property="deptName" label="科室" ></el-table-column>
+                    <el-table-column property="titlesName" label="职称"></el-table-column>
+                    <el-table-column label="操作">
+                      <template slot-scope="scope">
+                        <span v-if="scope.row.hasAdd == 1">已添加</span>
+                        <el-button v-if="scope.row.hasAdd == 0" type="text" size="mini" @click="addPersonnel(scope.row)">添加</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <div style="display: flex;justify-content: flex-end;padding: 20px 0 10px;">
+                    <el-pagination background layout="total, prev, pager, next"
+                                   :total="totalAll"
+                                   :page-size="10"
+                                   @current-change="currentChange"
+                    >
+                    </el-pagination>
+                  </div>
+                </el-dialog>
+              </div>
+              <!-- 排序弹窗 -->
+              <div class="sort">
+                <el-dialog title="排序" :visible.sync="sortShow" width="30%">
+                  <el-form>
+                    <el-form-item label="排序至" :label-width="formLabelWidth">
+                      <el-input v-model="sort" type="number" autocomplete="off" min="1" :max="total"></el-input> 位
+                    </el-form-item>
+                  </el-form>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button  @click="sortShow = false">取 消</el-button>
+                    <el-button  type="primary" @click="sortSub()">确 定</el-button>
+                  </div>
+                </el-dialog>
+              </div>
+
+              <!--分享-->
+              <div class="share">
+                <el-dialog :visible.sync="shareShow" width="400px">
+                  <div style="display: flex;justify-content: center;align-items: center;">
+                    <div style="width: 320px;display: flex;flex-direction: column;justify-content: center;align-items: center;">
+                      <img :src="twoObj.shareCode" width="300" height="300"/>
+                      <el-button type="text"><a :href="baseUrl+'/doctor/classify/code/download?classifyId='+classifyId">下载二微码</a></el-button>
+                      <el-input placeholder="请输入内容" v-model="twoObj.shareUrl" disabled>
+                        <el-button slot="append" @click="copy()">复制</el-button>
+                      </el-input>
+                    </div>
+                  </div>
+                </el-dialog>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</template>
+
+<script>
+    import commonHe from '../../components/commonHe'
+    import baseUrl from '@/api/base.js'
+
+
+    export default {
+        name: "peopleManagement",
+        data() {
+            return {
+                dialogTableVisible: false,
+
+                classifyId: '',
+
+                list: [],
+
+                table: [],
+
+                total: 0,
+
+                totalAll: 0,
+
+                sort: 1,
+
+                input3: null,
+
+                multipleSelection: [],
+
+                queryLimit: null,
+
+                sortShow: false,
+                shareShow: false,
+
+                formLabelWidth: '100px',
+
+                drId: '',
+
+                pageNumAll: 1,
+                pageNum: 1,
+
+                twoObj: {},
+
+                baseUrl: '',
+            }
+        },
+
+        created() {
+            this.classifyId = this.$route.query.classifyId
+            this.baseUrl = baseUrl
+            this.getDoctorClassifyDoctorHas()
+            this.getClassifyDoctorAll()
+        },
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+        },
+        methods: {
+
+            copy() {
+                const input = document.createElement('input')
+                document.body.appendChild(input)
+                input.setAttribute('value',this.twoObj.shareUrl)
+                input.select()
+                if (document.execCommand('copy')) {
+                    document.execCommand('copy')
+                    this.$message({
+                        type: 'success',
+                        message: '复制成功!'
+                    })
+                } else {
+                    this.$message({
+                        type: 'error',
+                        message: '浏览器不支持!'
+                    })
+                }
+                document.body.removeChild(input)
+            },
+
+            onShareShow(data) {
+                this.shareShow = true
+                console.log(data)
+                this.$axios({
+                    url: 'doctor/classify/share',
+                    method: 'post',
+                    data: {
+                        classifyId: this.classifyId
+                    }
+                }).then(res => {
+                    this.twoObj = res.data.data
+                })
+            },
+
+            addPersonnel(item) {
+                this.$axios({
+                    url: 'doctor/classify/doctor/add',
+                    method: 'post',
+                    data: {
+                        classifyId: this.classifyId,
+                        drId: item.drId
+                    }
+                }).then(res => {
+                    this.getDoctorClassifyDoctorHas()
+                    this.getClassifyDoctorAll()
+                })
+            },
+
+            getDoctorClassifyDoctorHas() {
+
+                if (this.input3 == '') {
+                    this.input3 = null
+                }
+
+                this.$axios({
+                    url: 'doctor/classify/doctor/has',
+                    method: 'post',
+                    data: {
+                        classifyId: this.classifyId,
+                        queryLimit: this.input3,
+                        pageNum: this.pageNum,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    this.list = res.data.data
+                    this.total = res.data.total
+                })
+            },
+
+            getClassifyDoctorAll() {
+                // console.log('开始')
+
+                if (this.queryLimit == '') {
+                    this.queryLimit = null
+                }
+
+                this.$axios({
+                    url: 'doctor/classify/doctor/all',
+                    method: 'post',
+                    data: {
+                        classifyId: this.classifyId,
+                        queryLimit: this.queryLimit,
+                        pageNum: this.pageNumAll,
+                        pageSize: 10
+                    }
+                }).then(res => {
+                    this.table = res.data.data
+                    this.totalAll = res.data.total
+                })
+            },
+
+            handleCurrentChange(val) {
+                this.pageNum = val
+                this.getDoctorClassifyDoctorHas()
+            },
+
+            handleSelectionChange(val) {
+                this.multipleSelection = val
+            },
+
+            currentChange(val) {
+                this.pageNumAll = val
+                this.getClassifyDoctorAll()
+            },
+
+            onDelete(item) {
+                this.$confirm('是否移出!', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.$axios({
+                        url: 'doctor/classify/doctor/delete',
+                        method: 'post',
+                        data: {
+                            classifyId: this.classifyId,
+                            drId: item.drId
+                        }
+                    }).then(res => {
+                        this.getDoctorClassifyDoctorHas()
+                        this.$message({
+                            type: 'success',
+                            message: '移出成功!'
+                        });
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消移出'
+                    });
+                });
+            },
+
+            sortSub() {
+                this.$axios({
+                    url: 'doctor/classify/doctor/sort',
+                    method: 'post',
+                    data: {
+                        drId: this.drId,
+                        sortNo: this.sort,
+                        classifyId: this.classifyId,
+                    }
+                }).then(res => {
+                    this.getDoctorClassifyDoctorHas()
+                    this.sortShow = false
+                    console.log(res)
+                })
+            },
+
+
+        },
+        components: {
+            commonHe
+        }
+    }
+</script>
+
+<style scoped>
+  .sort >>> .el-input {
+    width: 200px;
+  }
+  .keshissk >>> .el-input__inner{
+    height: 32px!important;
+    line-height: 32px!important;
+  }
+</style>
+
+<style lang="scss">
+  @import '../../styles/hxmstyle.css';
+
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    width: 260px;
+    padding-left: 40px;
+  }
+
+  .yyglsz-t {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+</style>

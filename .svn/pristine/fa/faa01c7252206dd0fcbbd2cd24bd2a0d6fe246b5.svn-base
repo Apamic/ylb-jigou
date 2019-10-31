@@ -1,0 +1,359 @@
+<template>
+    <div>
+        <div class="block">
+            <el-date-picker
+              v-model="value"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              value-format="yyyy-MM-dd"
+              end-placeholder="结束日期">
+            </el-date-picker>
+        </div>
+        <div class="sealname">
+            <el-input v-model="input" placeholder="请输入推广员手机号"></el-input>
+        </div>
+        <el-row class="search">
+            <el-button type="primary" class="btn" @click="gosearch">搜索</el-button>
+        </el-row>
+        <div class="second-tr">
+            <span class="tx" >头像/昵称</span>
+            <span class="xm">姓名</span>
+            <span class="phone">手机号</span>
+            <span class="sj">申请时间</span>
+            <span class="zt">状态</span>
+            <span class="cz">操作</span>
+        </div>
+        <div class="second-create-tr" v-for="(item,index) in list" :key="index">
+            <span class="tx"><div class="touxiang"><img :src="item.imagePath" alt=""></div>{{item.nickName}}</span>
+            <span>{{item.userName}}</span>
+            <span>{{item.phone}}</span>
+            <span class="time">{{item.applicationTime}}</span>
+            <!-- <span>{{item.approvalStatus}}</span> -->
+            <span v-if="item.approvalStatus==0">未审核</span>
+            <span v-if="item.approvalStatus==1">审核通过</span>
+            <span v-if="item.approvalStatus==2">审核未通过</span>
+            <span class="details" v-if="item.approvalStatus==0">
+                <div @click="gopass(item.userId)">审核通过</div>
+                <div @click="fail(item.userId)">审核不通过</div>
+            </span>
+            <span class="details" v-if="item.approvalStatus==1">
+                已审核通过
+            </span>
+            <span class="details" v-if="item.approvalStatus==2">
+                审核未通过
+            </span>
+        </div>
+          <!-- @size-change="handleSizeChange1" -->
+        <el-pagination
+            @current-change="handleCurrentChange1"
+            :current-page="currentPage"
+            :page-sizes="[10, 20, 30, 100]"
+            :page-size="pageSize"
+            background
+            layout="prev, pager, next"
+            :total="total"
+            class="fenye">
+        </el-pagination>
+    </div>
+</template>
+<script>
+import {getPromoters} from "../api/api.js"
+// 审批通过 不通过：
+import {pass} from '../api/api'
+import {fail} from '../api/api'
+
+
+export default {
+    data(){
+        return{
+        value: '',
+        input: '',
+        list:[],
+        // 分页：
+        total:5,
+        currentPage:1,// 当前页码
+        pageSize:5,
+        }
+    },
+    methods:{
+        gosearch(){
+            // alert(111)
+            var searchList={
+            	"pageParam" : {
+            		"pageSize" : 5,
+            		"pageNum" : 1
+            	},
+            	"promoterInfo" : {
+            		"gener" : "1",
+            		"approvalStatus" : "0",
+                    "parentUserId" : null,
+                    "orgId" : localStorage.getItem("orgId")
+            	},
+            	"startTime" : this.value[0],
+            	"endTime" : this.value[1],
+            	"search" : this.input
+            }
+            // console.log(searchList)
+            getPromoters(searchList).then(data=>{
+                this.total=data.data.total
+                this.list=data.data.promoterInfoList;
+            //   console.log(this.list)
+          })
+
+        },
+        gopass(userId){
+            this.$confirm('是否审核通过?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                var passList={
+            	"promoterInfo" : {
+            		"userId" : userId
+            	}
+            }
+            pass(passList).then(data=>{
+                if(data.rtnCode){
+                    // alert("审核通过成功")
+                    var searchList={
+                	"pageParam" : {
+                		"pageSize" : 5,
+                		"pageNum" : 1
+                	},
+                	"promoterInfo" : {
+                		"gener" : "1",
+            		    "approvalStatus" : "0",
+                        "parentUserId" : null,
+                        "orgId" : localStorage.getItem("orgId")
+                	},
+                	"startTime" : this.value[0],
+                	"endTime" : this.value[1],
+                	"search" : this.input
+                }
+                // console.log(searchList)
+                getPromoters(searchList).then(data=>{
+                    this.list=data.data.promoterInfoList;
+                })
+                }
+            //   console.log(data)
+            })
+            this.$message({
+                    type: 'success',
+                    message: '审核通过成功!'
+                });
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消'
+                });          
+            });
+        },
+
+
+
+
+        fail(userId){
+            this.$confirm('是否审核不通过?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                var failList={
+            	"promoterInfo" : {
+            		"userId" : userId
+            	}
+            }
+            fail(failList).then(data=>{
+                if(data.rtnCode){
+                    // alert("审核不通过成功")
+                    var searchList={
+                    	"pageParam" : {
+                    		"pageSize" : 5,
+                    		"pageNum" : 1
+                    	},
+                    	"promoterInfo" : {
+                    		"gener" : "1",
+            	    	    "approvalStatus" : "0",
+                            "parentUserId" : null,
+                            "orgId" : localStorage.getItem("orgId")
+                    	},
+                    	"startTime" : this.value[0],
+                    	"endTime" : this.value[1],
+                    	"search" : this.input
+                    }
+                    // console.log(searchList)
+                    getPromoters(searchList).then(data=>{
+                        this.list=data.data.promoterInfoList;
+                    //   console.log(this.list)
+                    })
+                }
+                // console.log(data)
+            })
+                this.$message({
+                    type: 'success',
+                    message: '审核不通过成功!'
+                });
+                
+                
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消'
+                });          
+            });
+            // alert(a)
+            
+        },
+        // 翻页：
+        handleCurrentChange1(val){
+            var searchList={
+            	"pageParam" : {
+            		"pageSize" : 5,
+            		"pageNum" : val
+            	},
+            	"promoterInfo" : {
+            		"gener" : "1",
+            		"approvalStatus" : "0",
+                    "parentUserId" : null,
+                    "orgId" : localStorage.getItem("orgId")
+            	},
+            	"startTime" : this.value[0],
+            	"endTime" : this.value[1],
+            	"search" : this.input
+            }
+            // console.log(searchList)
+            getPromoters(searchList).then(data=>{
+                this.total=data.data.total
+                this.list=data.data.promoterInfoList;
+            //   console.log(this.list)
+          })
+    }       
+
+
+
+    },
+    created(){
+        var searchList={
+            	"pageParam" : {
+            		"pageSize" : 5,
+            		"pageNum" : 1
+            	},
+            	"promoterInfo" : {
+            		"gener" : "1",
+            		"approvalStatus" : "0",
+                    "parentUserId" : null,
+                    "orgId" : localStorage.getItem("orgId")
+            	},
+            	"startTime" : this.value[0],
+            	"endTime" : this.value[1],
+            	"search" : this.input
+            }
+            // console.log(searchList)
+            getPromoters(searchList).then(data=>{
+            this.list=data.data.promoterInfoList;
+        //   console.log(this.list)
+        })
+
+    },
+
+}
+</script>
+
+<style lang="scss" scoped>
+.sealname{
+    // float:left;
+    width: 240px;
+    margin-top:-40px;
+    margin-left:360px;
+}               
+.search{
+    position: absolute;
+    top:2px;
+    left:610px;
+    .btn{
+        width: 80px;
+        height: 36px;
+        font-size:16px;
+        line-height: 12px;
+    }
+}   
+
+.second-tr{
+    display: flex;
+    justify-content: space-between;
+    margin-top:20px;
+    width: 97%;
+    height: 40px;
+    background-color: #EDEDED;
+    font-size:13px;
+    padding-left:5px;
+    span{
+        display: block;
+        // float:left;
+        width: 160px;
+        line-height: 40px;
+        color:#212121;
+        margin-left:5px;
+    }
+}
+.second-create-tr{
+    display: flex;
+    justify-content: space-between;
+    width: 97%;
+    height: 60px;
+    border-bottom: 1px solid #e0e0e0;
+    border-left:1px solid #e0e0e0;
+    border-right:1px solid #e0e0e0;
+    font-size:13px;
+    padding-left:3px;
+    // background-color: #EDEDED;
+    span{
+        display: block;
+        float:left;
+        width: 160px;
+        line-height: 60px;
+        height: 60px;
+        color:#212121;
+        margin-left:5px;
+    }
+    .touxiang{
+        width: 40px;
+        height: 40px;
+        background-color: pink;
+        margin-top:10px;
+        border-radius: 50%;
+        overflow: hidden;
+        float:left;
+        margin-right:5px;
+        img{
+            width: 40px;
+            height: 40px; 
+        }
+    }
+    .time{
+        margin-left:15px;
+    }
+    .details{
+        width: 180px;
+        color:#0076FF;
+        margin-left:-5px;
+        div{
+            text-align: left;
+            width: 70px;
+            float:left;
+            margin-left:10px;
+        }
+    }
+    .details:hover{
+        cursor:pointer
+    }
+    
+}
+.fenye{
+        margin-top:30px;
+        text-align:right;
+        margin-right:30px;
+        }
+</style>
+

@@ -1,0 +1,863 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="style-box">
+      <div id="box">
+        <div class="yysz-ys">
+          <div class="cigystyle kspz">
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+              <el-tab-pane label="科室配置" name="first">
+                <el-row class="tou-btn">
+                  <el-button type="primary" @click="dialogFormVisible = true,reset()">新建科室</el-button>
+                  <!--新建科室内容-->
+                  <div>
+                    <el-dialog title="新建科室" :visible.sync="dialogFormVisible">
+                      <el-form :model="form">
+                        <el-form-item label="上级科室" :label-width="formLabelWidth">
+                          <el-select v-model="form.deptUpId" placeholder="请选择上级科室">
+                            <el-option
+                              v-for="item in tableDataOne"
+                              :key="item.deptId"
+                              :label="item.deptName"
+                              :value="item.deptId"
+                             >
+                            </el-option>
+                          </el-select>
+                        </el-form-item>
+<!--                        <el-form-item label="科室编号" :label-width="formLabelWidth">-->
+<!--                          <el-input v-model="form.name" autocomplete="off"></el-input>-->
+<!--                        </el-form-item>-->
+                        <el-form-item label="科室名称" :label-width="formLabelWidth">
+                          <el-input v-model="form.deptName" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="备注" :label-width="formLabelWidth">
+                          <el-input type="textarea" v-model="form.remark"></el-input>
+                        </el-form-item>
+                      </el-form>
+                      <div slot="footer" class="dialog-footer" style="display: flex;justify-content: flex-end;padding: 5px 0;">
+                        <el-button @click="dialogFormVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="addDept">确 定</el-button>
+                      </div>
+                    </el-dialog>
+                  </div>
+                  <!--导入科室内容-->
+                  <el-button @click="importTree()">导入科室</el-button>
+                  <!--导入科室弹出框-->
+                  <div class="xjks-k xjdrks">
+                    <el-dialog title="导入科室" :visible.sync="dialogFormVisible1">
+                      <el-form :model="form">
+                        <template>
+                          <div class="drkskuang">
+                            <div class="jingaotishi"><p>请从下列的科室选择要导入的科室</p></div>
+                            <el-tree
+                              :data="deptList"
+                              show-checkbox
+                              ref="tree"
+                              node-key="deptId"
+                              :props="defaultProps"
+                            >
+                            </el-tree>
+                          </div>
+                        </template>
+                      </el-form>
+                      <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogFormVisible1 = false">取 消</el-button>
+                        <el-button type="primary" @click="onImportTree">确定导入</el-button>
+                      </div>
+                    </el-dialog>
+                  </div>
+                  <!--                  <el-button>科室排序</el-button>-->
+                  <!--                  <el-button>删除</el-button>-->
+                  <div class="keshissk">
+                    <el-input placeholder="请输入内容" v-model="input3" class="input-with-select">
+                      <el-button slot="append" @click="onSearchDept(input3)">搜索</el-button>
+                    </el-input>
+                  </div>
+                </el-row>
+
+                <!-- 科室表格： -->
+                <div class="hxmbiaoge2">
+                  <el-table ref="multipleTable1" tooltip-effect="dark" :data="tableDataOne" style="width: 100%" row-key="deptId"
+                            :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+                            @selection-change="handleSelectionChange"
+                  >
+<!--                    <el-table-column type="selection" width="55">-->
+<!--                    </el-table-column>-->
+                    <el-table-column prop="deptId" label="编号" width="220px">
+                    </el-table-column>
+                    <el-table-column prop="deptName" label="科室名称" width="160">
+                      <!--                      <template slot-scope="props">-->
+                      <!--                        <span>{{props.lvList.deptName}}</span>-->
+                      <!--                      </template>-->
+                    </el-table-column>
+                    <el-table-column prop="userCount" label="成员数">
+                    </el-table-column>
+                    <el-table-column prop="head" label="负责人">
+                    </el-table-column>
+                    <el-table-column prop="supportStaff" label="客服人员">
+                    </el-table-column>
+                    <el-table-column label="是否显示" prop="status">
+                      <template slot-scope="scope">
+                        <el-switch v-model="scope.row.status"
+                                   :active-value="1" :inactive-value="0"
+                                   @change="statusShow(scope.row)"
+                        >
+                        </el-switch>
+                        <!--                        <span>{{scope.row.status}}</span>-->
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="timeUpdate" label="更新时间">
+                    </el-table-column>
+                    <el-table-column label="操作" width="200px">
+                      <template slot-scope="scope">
+<!--                        <el-button type="text" size="small">分享</el-button>-->
+                        <el-button type="text" size="small" v-if="scope.row.deptId.length > 7">
+                          <router-link :to="{path: 'keshiRygl',query:{deptId:scope.row.deptId}}">人员管理</router-link>
+                        </el-button>
+                        <el-button type="text" v-if="scope.row.deptId.length > 7" @click=" dialogFormVisible2 = true,onEdit(scope.row)" size="small">编辑</el-button>
+                        <el-button type="text" v-if="scope.row.deptId.length <= 7" @click="sortShow = true,onSort(scope.row)"
+                                   size="small">排序
+                        </el-button>
+                        <el-button type="text" v-if="scope.row.deptId.length <= 7" @click="onAdd(scope.row)"
+                                   size="small">添加下级
+                        </el-button>
+                        <el-button type="text" size="small" @click="onDelete(scope.row)">删除</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <div style="display: flex;justify-content: flex-end;padding: 20px 0 10px;">
+                    <el-pagination background layout="total, prev, pager, next"
+                                   :total="total"
+                                   :page-size="10"
+                                   @current-change="handleCurrentChange"
+                    >
+                    </el-pagination>
+                  </div>
+                </div>
+
+                <!-- 排序弹窗 -->
+                <div class="sort">
+                  <el-dialog title="排序" :visible.sync="sortShow">
+                    <el-form>
+                      <el-form-item label="排序至" :label-width="formLabelWidth">
+                        <el-input v-model="sort" type="number" autocomplete="off" min="1" :max="total"></el-input> 位
+                      </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                      <el-button  @click="sortShow = false">取 消</el-button>
+                      <el-button  type="primary" @click="sortSub()">确 定</el-button>
+                    </div>
+                  </el-dialog>
+                </div>
+
+              </el-tab-pane>
+
+              <!--编辑-添加下级弹窗   开始······················································-->
+              <div>
+                <el-dialog title="编辑" :visible.sync="dialogFormVisible2">
+                  <el-form :model="form">
+                    <el-form-item label="上级科室" :label-width="formLabelWidth">
+                      <el-select v-model="form.deptUpId" placeholder="请选择上级科室" :disabled="disabled">
+                        <el-option
+                          v-for="item in deptList"
+                          :key="item.deptId"
+                          :label="item.deptName"
+                          :value="item.deptId"
+                        >
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="科室编号" :label-width="formLabelWidth">
+                      <el-input v-model="form.deptId" autocomplete="off" :disabled="disabled"></el-input>
+                    </el-form-item>
+                    <el-form-item label="科室名称" :label-width="formLabelWidth">
+                      <el-input v-model="form.deptName" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="备注" :label-width="formLabelWidth">
+                      <el-input type="textarea" v-model="form.remark"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button  @click="dialogFormVisible2 = false">取 消</el-button>
+                    <el-button  type="primary" @click="editSub()">确 定</el-button>
+                  </div>
+                </el-dialog>
+              </div>
+              <!--编辑弹窗   结束······················································-->
+
+              <!--添加下级弹窗   开始······················································-->
+              <div>
+                <el-dialog title="添加下级" :visible.sync="dialogFormVisible3">
+                  <el-form :model="form">
+                    <el-form-item label="上级科室" :label-width="formLabelWidth">
+                      <el-select v-model="form.deptUpId" placeholder="请选择上级科室" :disabled="disabled">
+                        <el-option
+                          v-for="item in deptList"
+                          :key="item.deptId"
+                          :label="item.deptName"
+                          :value="item.deptId"
+                        >
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+<!--                    <el-form-item label="科室编号" :label-width="formLabelWidth">-->
+<!--                      <el-input v-model="form.name" autocomplete="off"></el-input>-->
+<!--                    </el-form-item>-->
+                    <el-form-item label="科室名称" :label-width="formLabelWidth">
+                      <el-input v-model="form.deptName" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="备注" :label-width="formLabelWidth">
+                      <el-input type="textarea" v-model="form.remark"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogFormVisible3 = false">取 消</el-button>
+                    <el-button type="primary" @click="addDept">确 定</el-button>
+                  </div>
+                </el-dialog>
+              </div>
+              <!--添加下级弹窗   结束······················································-->
+
+              <el-tab-pane class="tsks-table" label="特色科室" name="second">
+
+                <el-row class="tou-btn">
+                  <div style="display: flex;justify-content: space-between;">
+                    <div>
+                      <el-button type="primary">
+                        <router-link :to="{path: '/tsks',query: {deptId: 0}}">新建特色科室</router-link>
+                      </el-button>
+                      <!--特色科室内容-->
+                      <el-button @click="featureDelete(multipleSelection)">删除</el-button>
+                    </div>
+                    <div style="display: flex;">
+                      <el-input placeholder="请输入内容" v-model="search" class="keshissk">
+                        <el-button slot="append" @click="tsSearch" type="primary">搜索</el-button>
+                      </el-input>
+                    </div>
+                  </div>
+                </el-row>
+
+                <el-table ref="multipleTable" :data="tableData3" tooltip-effect="dark"
+                          style="width: 100%" @selection-change="handleSelectionChange">
+                  <el-table-column type="selection" width="55">
+                  </el-table-column>
+
+                  <el-table-column prop="deptName" label="科室名称" width="300">
+                  </el-table-column>
+                  <el-table-column prop="phone" label="联系电话">
+                  </el-table-column>
+                  <el-table-column prop="timeCreate" label="创建时间">
+                  </el-table-column>
+                  <el-table-column label="操作" width="200px">
+                    <template slot-scope="scope">
+                      <el-button type="text" size="small">
+                        <router-link :to="{path: 'tsks',query:{deptId:scope.row.deptId}}">编辑</router-link>
+                      </el-button>
+<!--                      <el-button type="text" size="small">分享</el-button>-->
+                      <el-button type="text" size="small" @click="featureDelete([scope.row.deptId])">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+    import commonHe from '../../components/commonHe'
+    import {orgDept} from '../../api/api'
+    import {addDept} from '../../api/api'
+    // 特色科室：
+    import {tsDept} from '../../api/api'
+
+
+    export default {
+        data() {
+            return {
+                tableDataOne: [],
+
+                disabled: true,
+
+                pageNum: 1,
+
+                deptList: [],
+                defaultProps: {
+                    label: 'deptName',
+                    children: 'children',
+                },
+
+                total: 0,
+                multipleSelection: [],
+
+                multipleTable1: [],
+                multipleTable: [],
+                sortShow: false,
+                sort: 1,
+                sortId: '',
+
+                //按钮状态
+                button1: 'primary',
+                button2: '',
+                button3: '',
+                button4: '',
+
+                // 是否显示开关：
+                status: '',
+                search: '',
+
+                //这是科室配置 头部右边的搜索框的值
+                input3: '',
+
+                //以下是 导入科室 弹出框里面的 树结构
+                //data树开始
+
+                count: 1,
+                //tab切换默认第一个
+                activeName: 'first',
+
+                //新建科室弹出框可见与否
+                dialogFormVisible: false,
+
+                //导入科室弹出框可见与否
+                dialogFormVisible1: false,
+                //编辑弹出框可见与否
+                dialogFormVisible2: false,
+                //添加弹出框可见与否
+                dialogFormVisible3: false,
+
+                form: {
+                    deptName: '',
+                    deptUpId: '',
+                    deptId: '',
+                    remark: '',
+                    deptUpName: '',
+                },
+                // 表单左边标题宽度
+                formLabelWidth: '100px',
+
+                tableData: [
+                    {
+                        cyshu: '166',
+                        fzren: '王小虎',
+                        kfren: '王二虎',
+                        gxshijian: '2019-05-20',
+                    },
+                    {
+                        cyshu: '168',
+                        fzren: '张小虎',
+                        kfren: '王二虎',
+                        gxshijian: '2019-08-20',
+                    }
+                ],
+                tableData1: [
+                    {
+                        id: 1,
+
+                        ksmc: '名称1',
+                        cyshu: '160',
+                        fzren: '王小虎',
+                        kfren: '王二虎',
+                        gxshijian: '2019-05-20',
+                    },
+
+                ],
+                tableData3: [
+                        {
+                            name: '彩超科室',
+                            tel: '13898763880',
+                            date: '2019-03-01 08:45:01'
+                        }
+                    ],
+            };
+        },
+        created() {
+            this.userId = localStorage.getItem("userId")
+            // alert(this.userId)
+            var searchList = {
+                // "deptName": "",
+                "pageNum": 1,
+                "pageSize": 10
+            }
+            orgDept(searchList).then(data => {
+                // console.log("科室配置", data)
+                this.tableDataOne = data.data;
+                this.total = data.total
+                // console.log("科室配置",this.tableDataOne)
+            })
+
+
+            var tsList = {
+                "deptName": "",
+                "pageNum": 1,
+                "pageSize": 10
+            }
+            tsDept(tsList).then(data => {
+                // console.log("特色科室",data)
+                this.tableData3 = data.data
+            })
+
+
+            this.getDeptList()
+
+        },
+        methods: {
+
+            reset() {
+                this.form = {
+                    deptName: '',
+                    deptUpId: '',
+                    deptId: '',
+                    remark: '',
+                    deptUpName: '',
+                }
+            },
+
+            onAdd(item) {
+                this.dialogFormVisible3 = true
+                console.log(item)
+                this.form = {
+                    deptName: '',
+                    deptUpId: item.deptId,
+                    remark: ''
+                }
+            },
+
+            editSub() {
+                this.$axios({
+                    url: 'orgDept/update',
+                    method: 'post',
+                    data: {
+                        deptId: this.form.deptId,
+                        deptName: this.form.deptName,
+                        remark: this.form.remark,
+                    }
+                }).then(res => {
+                    this.dialogFormVisible2 = false
+                    this.getOrgDept()
+                })
+            },
+
+            addDept() {
+               // console.log('添加')
+                this.$axios({
+                    url: 'orgDept/add',
+                    method: 'post',
+                    data: {
+                        deptName: this.form.deptName,
+                        deptUpId: this.form.deptUpId,
+                        remark: this.form.remark
+                    }
+                }).then(res => {
+                    this.dialogFormVisible = false
+                    this.dialogFormVisible3 = false
+                    this.getOrgDept()
+                    console.log(res.data)
+                })
+            },
+
+            onEdit(item) {
+                this.dialogFormVisible2 = true
+                this.$axios({
+                    url: 'orgDept/detail',
+                    method: 'post',
+                    data: {
+                        deptId: item.deptId,
+                    },
+                }).then(res => {
+                    this.form = {
+                        deptId: res.data.data.deptId,
+                        deptName: res.data.data.deptName,
+                        deptUpId: res.data.data.deptUpId,
+                        deptUpName: res.data.data.deptUpName,
+                        remark: res.data.data.remark
+                    }
+                    // console.log(res.data)
+                })
+                // this.form = {
+                //
+                // }
+            },
+
+            statusShow(val) {
+                this.$axios({
+                    url: 'orgDept/status',
+                    method: 'post',
+                    data: {
+                        deptId: val.deptId,
+                        status: val.status == 1 ? 1 : 0
+                    },
+                }).then(res => {
+                    console.log(res)
+                })
+            },
+
+            getOrgDept() {
+                this.$axios({
+                    url: 'orgDept',
+                    method: 'post',
+                    data: {
+                        deptName: this.input3,
+                        pageNum: 1,
+                        pageSize: 10,
+                    }
+                }).then(res => {
+                    this.tableDataOne = res.data.data
+                    this.total = res.data.total
+                    console.log(res)
+                })
+            },
+
+            getDeptList() {
+                this.$axios({
+                    url: '/orgDept/list',
+                    method: 'post',
+                    data: {}
+                }).then(res => {
+                    // console.log('list',res)
+                    this.deptList = res.data.data
+                })
+            },
+
+            onSearchDept(deptName) {
+                if (deptName == '') {
+                    this.$axios({
+                        url: '/orgDept',
+                        method: 'post',
+                        data: {
+                            pageNum: 1,
+                            pageSize: 10,
+                        }
+                    }).then(res => {
+                        // console.log('list', res)
+                        this.tableDataOne = res.data.data
+                        this.total = res.data.total
+                        // console.log('table', this.tableDataOne)
+                    })
+                } else {
+                    this.$axios({
+                        url: '/orgDept',
+                        method: 'post',
+                        data: {
+                            deptName: deptName,
+                            pageNum: 1,
+                            pageSize: 10,
+                        }
+                    }).then(res => {
+                        // console.log('list',res)
+                        this.tableDataOne = res.data.data
+                        this.total = res.data.total
+                        // console.log('table', this.tableDataOne)
+                    })
+                }
+                this.input3 = ''
+            },
+
+            handleCurrentChange(val) {
+                this.pageNum = val
+                var searchList = {
+                    // "deptName": "",
+                    "pageNum": this.pageNum,
+                    "pageSize": 10,
+
+                }
+                orgDept(searchList).then(res => {
+                    this.tableDataOne = res.data
+
+                    console.log(this.tableDataOne)
+                    this.total = res.total
+                })
+            },
+
+            onDelete(item) {
+                this.$confirm('已选中删除!, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.$axios({
+                        url: 'orgDept/delete',
+                        method: 'post',
+                        data: {
+                            deptIds: [item.deptId],
+                        }
+                    }).then(res => {
+                        this.getOrgDept()
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+
+            featureDelete(arr) {
+                if (arr.length == 0) {
+                    return
+                }
+                this.$confirm('已选中删除!, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let data = []
+                    if (this.multipleSelection.length == 0) {
+
+                    } else {
+                        this.multipleSelection.forEach(item => {
+                            data.push(item.deptId)
+                            arr = data
+                        })
+                    }
+                    this.$axios({
+                        url: 'dept/delete',
+                        method: 'post',
+                        data: {
+                           deptIds: arr
+                        }
+                    }).then(res => {
+                         this.getDept()
+                         this.$message({
+                              type: 'success',
+                              message: '删除成功!'
+                         })
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+
+            onImportTree() {
+                this.deptList.forEach(item => {
+                    item.choose = 0
+                })
+                let arrID = this.$refs.tree.getCheckedNodes()
+                this.deptList.forEach(item => {
+                    arrID.forEach(items => {
+                        if (item.deptId == items.deptId) {
+                            item.choose = 1
+                        }
+                    })
+                })
+                console.log(arrID)
+                console.log(this.deptList)
+                this.$axios({
+                    url: 'orgDept/import',
+                    method: 'post',
+                    data: {
+                        deptDictList: this.deptList,
+                    }
+                }).then(res => {
+                    this.getOrgDept()
+                    this.dialogFormVisible1 = false
+                })
+            },
+
+            onSort(item) {
+                this.sortId = item.deptId
+            },
+
+            sortSub() {
+                this.$axios({
+                    url: 'orgDept/sort/no',
+                    method: 'post',
+                    data: {
+                        deptId: this.sortId,
+                        sortNo: this.sort
+                    }
+                }).then(res => {
+                    console.log(res)
+                    this.getOrgDept()
+                    this.sortShow = false
+                })
+            },
+
+            getDept() {
+                this.$axios({
+                    url: 'dept',
+                    method: 'post',
+                    data: {
+                        pageNum: 1,
+                        pageSize: 10,
+                    }
+                }).then(res => {
+                    this.tableData3 = res.data.data
+                })
+            },
+
+            importTree() {
+                this.dialogFormVisible1 = true
+                let arr = []
+                // console.log('deptList',this.deptList)
+                this.deptList.forEach(item => {
+                    if (item.choose == 1) {
+                        arr.push(item.deptId)
+                    }
+
+                    // if (item.children) {
+                    //     item.children.forEach(items => {
+                    //         if(items.choose == 1) {
+                    //             arr.push(items.deptId)
+                    //         }
+                    //     })
+                    // }
+                })
+                setTimeout(() => {
+                    this.$refs.tree.setCheckedKeys(arr)
+                }, 10)
+            },
+
+
+            //按钮选择状态显示颜色
+            seeHour() {
+                this.showDay = false;
+                this.showHour = true;
+                this.showMonth = false;
+                this.buttonhour = 'primary';
+                this.buttonday = '';
+                this.buttonmonth = '';
+            },
+            seeDay() {
+                this.showDay = true;
+                this.showHour = false;
+                this.showMonth = false;
+                this.buttonday = 'primary';
+                this.buttonhour = '';
+                this.buttonmonth = '';
+            },
+            seeMonth() {
+                this.showDay = false;
+                this.showHour = false;
+                this.showMonth = true;
+                this.buttonmonth = 'primary';
+                this.buttonday = '';
+                this.buttonhour = '';
+            },
+            // 特色科室搜索：
+            tsSearch() {
+                var tsList = {
+                    "deptName": this.search,
+                    "pageNum": 1,
+                    "pageSize": 10
+                }
+                tsDept(tsList).then(data => {
+                    // console.log("搜索特色科室",data)
+                    this.tableData3 = data.data
+                })
+
+            },
+
+
+            //表格树加载
+            //以上是表2树加载
+            onSubmit() {
+                console.log('submit!');
+            },
+
+            handleCheckChange(data, checked, indeterminate) {
+                console.log(data, checked, indeterminate);
+            },
+            handleNodeClick(data) {
+                console.log(data);
+            },
+            loadNode(node, resolve) {
+                if (node.level === 0) {
+                    return resolve([{name: '医院名称'}]);
+                }
+                if (node.level > 3) return resolve([]);
+
+                var hasChild;
+                if (node.data.name === '医院名称') {
+                    hasChild = true;
+                } else {
+                    hasChild = Math.random() > 0.5;
+                }
+
+                setTimeout(() => {
+                    var data;
+                    if (hasChild) {
+                        data = [{
+
+                            name: '科室' + this.count++
+                        }];
+                    } else {
+                        data = [];
+                    }
+
+                    resolve(data);
+                }, 500);
+            },
+            //科室配置和特色科室的tab切换方法
+            handleClick(tab, event) {
+                console.log(tab, event);
+            },
+            handleSelectionChange(val) {
+
+                console.log(val)
+
+                this.multipleSelection = val;
+            }
+        },
+        components: {
+            commonHe,
+        },
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+        }
+    }
+</script>
+
+
+<style scoped>
+  .sort >>> .el-input {
+    width: 200px;
+  }
+
+  .keshissk >>> .el-input__inner{
+    height: 32px!important;
+    line-height: 32px!important;
+  }
+</style>
+
+<style lang="scss">
+  @import '../../styles/hxmstyle.css';
+
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    /*width: 260px;*/
+    /*padding-left: 40px;*/
+  }
+
+
+</style>

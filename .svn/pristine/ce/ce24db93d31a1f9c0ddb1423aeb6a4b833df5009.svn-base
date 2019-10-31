@@ -1,0 +1,325 @@
+<template>
+  <div>
+    <commonHe></commonHe>
+    <div class="style-box">
+      <div id="box">
+        <div class="zhenge">
+          <div class="yggl-ym yyglsz-ym">
+            <div class="yyglsz-t">
+              <div>
+                <el-button type="primary" @click="dialogTableVisible=true">添加人员</el-button>
+                <el-button class="mrbtn" @click="onDelete()">删除</el-button>
+                <!--              <el-button class="mrbtn">排序</el-button>-->
+              </div>
+              <div class="keshissk">
+                <el-input placeholder="请输入内容" v-model="input3" class="input-with-select">
+                  <el-button slot="append" @click="pageNum=1,getDoctorHas()">搜索</el-button>
+                </el-input>
+              </div>
+            </div>
+            <div class="yyglsz-table">
+              <el-table
+                ref="multipleSelection"
+                :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
+                <!--                <el-table-column type="index" width="60">-->
+                <!--                </el-table-column>-->
+                <el-table-column
+                  type="selection"
+                  width="55">
+                </el-table-column>
+                <el-table-column prop="nameCn" label="姓名">
+                </el-table-column>
+                <el-table-column prop="officeTypeName" label="行政级别">
+                </el-table-column>
+                <el-table-column prop="deptName" label="科室">
+                </el-table-column>
+                <el-table-column prop="titlesName" label="职称">
+                </el-table-column>
+                <el-table-column label="操作" width="100">
+                  <template slot-scope="scope">
+                    <!--                    <el-button type="text" size="small">编辑</el-button>-->
+                    <el-button type="text" size="small" @click="sortShow = true,drId = scope.row.drId">排序</el-button>
+                    <el-button type="text" size="small" @click="onDelete(scope.row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div style="display: flex;justify-content: flex-end;padding: 20px 0 10px;">
+                <el-pagination background layout="total, prev, pager, next"
+                               :total="total"
+                               :page-size="10"
+                               @current-change="handleCurrentChange"
+                >
+                </el-pagination>
+              </div>
+            </div>
+            <div>
+              <el-dialog title="添加人员" :visible.sync="dialogTableVisible">
+                <div style="margin-bottom: 10px;width: 350px;">
+                  <el-input placeholder="姓名/昵称/ID" v-model="queryLimit" class="input-with-select" size="mini">
+                    <span slot="prepend">医生:</span>
+                    <el-button slot="append" icon="el-icon-search" @click="pageNumAll = 1,getDoctorAll()"></el-button>
+                  </el-input>
+                </div>
+                <el-table :data="table" size="mini">
+                  <el-table-column property="drId" label="医生编号" width="200"></el-table-column>
+                  <el-table-column property="nameCn" label="姓名" width="150"></el-table-column>
+                  <el-table-column property="officeTypeName" label="行政级别" width="200"></el-table-column>
+                  <el-table-column property="deptName" label="科室" ></el-table-column>
+                  <el-table-column property="titlesName" label="职称"></el-table-column>
+                  <el-table-column label="操作">
+                    <template slot-scope="scope">
+                      <span v-if="scope.row.hasAdd == 1">已添加</span>
+                      <el-button v-if="scope.row.hasAdd == 0" type="text" size="mini" @click="addPersonnel(scope.row)">添加</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <div style="display: flex;justify-content: flex-end;padding: 20px 0 10px;">
+                  <el-pagination background layout="total, prev, pager, next"
+                                 :total="totalAll"
+                                 :page-size="10"
+                                 @current-change="currentChange"
+                  >
+                  </el-pagination>
+                </div>
+              </el-dialog>
+            </div>
+
+            <!-- 排序弹窗 -->
+            <div class="sort">
+              <el-dialog title="排序" :visible.sync="sortShow">
+                <el-form>
+                  <el-form-item label="排序至" :label-width="formLabelWidth">
+                    <el-input v-model="sort" type="number" autocomplete="off" min="1" :max="total"></el-input> 位
+                  </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                  <el-button  @click="sortShow = false">取 消</el-button>
+                  <el-button  type="primary" @click="sortSub()">确 定</el-button>
+                </div>
+              </el-dialog>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+    import commonHe from '../../components/commonHe'
+
+    export default {
+        data() {
+            return {
+                tableData: [
+
+                ],
+                formLabelWidth: '100px',
+                sortShow: false,
+                sort: 1,
+                table: [],
+                dialogTableVisible: false,
+
+                drId: '',
+
+                queryLimit: null,
+
+                multipleSelection: [],
+                deptId: '',
+                pageNum: 1,
+                pageNumAll: 1,
+
+                input3: null,
+
+                total: 0,
+                totalAll: 0,
+            };
+        },
+        created() {
+            this.userId = localStorage.getItem("userId")
+            this.deptId = this.$route.query.deptId
+            this.getDoctorHas()
+            this.getDoctorAll()
+            console.log(this.deptId)
+            // alert(this.userId)
+        },
+        methods: {
+
+            sortSub() {
+                this.$axios({
+                    url: 'orgDept/doctor/sort',
+                    method: 'post',
+                    data: {
+                        drId: this.drId,
+                        sortNo: this.sort,
+                    }
+                }).then(res => {
+                    this.getDoctorHas()
+                    this.sortShow = false
+                    console.log(res)
+                })
+            },
+
+            onDelete(item) {
+                this.$confirm('是否确认删除!', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let data = []
+                    if (this.multipleSelection.length == 0) {
+                        data.push(item.drId)
+                    } else {
+                        this.multipleSelection.forEach(item => {
+                            data.push(item.drId)
+                        })
+                    }
+
+                    this.$axios({
+                        url: 'orgDept/doctor/delete',
+                        method: 'post',
+                        data: {
+                            drIds: data
+                        }
+                    }).then(res => {
+                        this.getDoctorHas()
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+
+            addPersonnel(item) {
+                this.$axios({
+                    url: 'orgDept/doctor/add',
+                    method: 'post',
+                    data: {
+                        deptId: this.deptId,
+                        drId: item.drId
+                    }
+                }).then(res => {
+                    this.getDoctorAll()
+                    this.getDoctorHas()
+                })
+            },
+
+            getDoctorHas() {
+
+                if (this.input3 == '') {
+                    this.input3 = null
+                }
+
+                this.$axios({
+                    url: 'orgDept/doctor/has',
+                    method: 'post',
+                    data: {
+                        deptId: this.deptId,
+                        queryLimit: this.input3,
+                        pageNum: this.pageNum,
+                        pageSize: 10
+                    },
+                }).then(res => {
+                    this.tableData = res.data.data
+                    this.total = res.data.total
+                })
+            },
+
+            getDoctorAll() {
+
+                if (this.queryLimit == '') {
+                    this.queryLimit = null
+                }
+
+                this.$axios({
+                    url: 'orgDept/doctor/all',
+                    method: 'post',
+                    data: {
+                        deptId: this.deptId,
+                        pageNum: this.pageNumAll,
+                        pageSize: 10,
+                        queryLimit: this.queryLimit,
+                    }
+                }).then(res => {
+                    console.log(res)
+                    this.table = res.data.data
+                    this.totalAll = res.data.total
+                })
+            },
+
+            handleSelectionChange(val) {
+                this.multipleSelection = val
+                console.log(this.multipleSelection)
+            },
+
+            currentChange(val) {
+                this.pageNumAll = val
+                this.getDoctorAll()
+            },
+
+            handleCurrentChange(val) {
+                this.pageNum = val
+                this.getDoctorHas()
+            }
+        },
+        components: {
+            commonHe
+        },
+        mounted() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth; //浏览器宽度
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight; //浏览器高度
+            document.getElementsByClassName("style-box")[0].style.height = (h - 68) + "px";
+            document.getElementsByClassName("style-box")[0].style.width = (w - 200) + "px";
+            document.getElementById("box").style.width = (w - 280) + "px";
+            document.getElementById("box").style.height = (h - 120) + "px";
+        }
+
+    }
+</script>
+
+<style scoped>
+  .sort >>> .el-input {
+    width: 200px;
+  }
+
+
+</style>
+
+
+<style lang="scss">
+  @import '../../styles/hxmstyle.css';
+
+  $left-width: 300px;
+  .style-box {
+    background: rgba(245, 245, 245, 1);
+    position: absolute;
+    left: 200px;
+    top: 68px;
+    overflow-y: auto;
+  }
+
+  .xjks-k .el-dialog__footer {
+    background: #fff;
+    width: 100%;
+    float: left;
+  }
+
+  .xjks-k .dialog-footer {
+    margin: auto;
+    width: 260px;
+    padding-left: 40px;
+  }
+
+  .yyglsz-t {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+</style>
